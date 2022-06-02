@@ -1,11 +1,20 @@
-FROM node
+# Pull base image
+FROM python:3.8
 
-WORKDIR /app
+# Set environment varibles
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
 
-COPY package*.json /app/
-RUN npm install
+WORKDIR /code/
 
-COPY . /app/
+# Install dependencies
+COPY poetry.lock /
+COPY pyproject.toml .
+RUN pip install poetry && \
+    poetry config virtualenvs.create false && \
+    poetry install
 
-EXPOSE 8081
-CMD [ "npm", "start"]
+COPY . /code/
+
+# EXPOSE 8081
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8081"]

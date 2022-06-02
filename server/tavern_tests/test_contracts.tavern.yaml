@@ -1,0 +1,38 @@
+---
+test_name: Tests contracts
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Getting empty contracts list
+    request:
+      url: "{host}/api/contracts/"
+      method: GET
+    response:
+      status_code: 200
+      json: []
+
+  - name: Creating contract without parameters
+    request:
+      url: "{host}/api/contracts/"
+      method: POST
+    response:
+      status_code: 422
+
+  - name: Creating contract with parameters
+    request:
+      url: "{host}/api/contracts/"
+      method: POST
+      json:
+        title: "contract title"
+        description: "contract source code"
+    response:
+      status_code: 201
+
+  - name: Getting contracts list
+    request:
+      url: "{host}/api/contracts/"
+      method: GET
+    response:
+      status_code: 200
