@@ -1,31 +1,43 @@
-# Docker_Projects
+# Repository for Smart Contracts
 
-Original Vue Template:
+> Docker Compose with 3 Container: Frontend Vue, Backend FastAPI, Database MongoDB
+
+### Fork from this resource
+
+**Original Vue Template:**
 https://vuejs-templates.github.io/webpack/
-Video:
+
+**Video:**
 https://www.youtube.com/watch?v=4qYRs0Yzh9I
-Git:
+
+**Git:**
 https://github.com/webdevjourneyWDJ/Docker_Projects/blob/master/server/src/app.js
 
-Build:
-docker-compose build
+### Hints for Developing
 
-Run Containter
-docker-compose up mongo/api/client
+**Build:**
+`docker-compose build`
 
-- -d in background
+**Run or Build single Container:**
+`docker-compose up <mongo/api/client>`
 
-Hot Reload Vue:
+**Run in Background:** Attach flag `-d`
 
-1. docker-compose up -d mongo
-2. docker-compose up -d api
-3. cd client
-4. npm run dev
+---
 
-Enter Mongo Shell
+**Hot Reload for Vue without Docker:**
 
-- docker.compose exec mongo bash
-- > mongosh -u mongo_user -p mongo_password
-- > > use main_db
-- > > show collections
-- > > db.contracts.drop()
+1. `docker-compose up -d mongo`
+2. `docker-compose up -d api`
+3. `cd client`
+4. `npm run dev`
+
+---
+
+**Enter Mongo Shell:**
+
+- `docker.compose exec mongo bash`
+- `mongosh -u mongo_user -p mongo_password`
+- `use main_db`
+- `show collections`
+- `db.contracts.drop()`
