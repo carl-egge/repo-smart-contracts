@@ -3,7 +3,7 @@
     It will not be confused with response objects - if you will need anything other than a simple CRUD.
 """
 from email.policy import default
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 
 from bson import ObjectId
@@ -36,11 +36,38 @@ class BaseDBModel(BaseModel):
             return temp[0] + ''.join(ele.title() for ele in temp[1:])
 
 
+class Content(BaseModel):
+    sourcecode: Optional[str]
+    bytecode: Optional[str]
+    abi: Optional[str]
+
+
+class Version(BaseModel):
+    vid: int = Field(default=1)
+    created: datetime
+    content: Content
+
+
+class ContractIn(BaseModel):
+    title: str
+    description: Optional[str]
+    sourcecode: Optional[str]
+    bytecode: Optional[str]
+    abi: Optional[str]
+
+
+class ContractPatch(BaseModel):
+    title: Optional[str]
+    description: Optional[str]
+    sourcecode: Optional[str]
+    bytecode: Optional[str]
+    abi: Optional[str]
+
+
 class ContractDB(BaseDBModel):
     id: Optional[OID]
     title: str
-    sourcecode: Optional[str]
-    abi: Optional[str]
-    bytecode: Optional[str]
-    version: int = Field(default=1)
-    created: datetime = Field(default_factory=datetime.utcnow)
+    description: Optional[str]
+    latest_version: Optional[int] = Field(default=1)
+    versions: List[Version]
+
