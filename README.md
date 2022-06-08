@@ -27,9 +27,9 @@ https://github.com/webdevjourneyWDJ/Docker_Projects/blob/master/server/src/app.j
 
 **Using the OpenAPI from fastAPI**
 
-Find the documentation: [http://localhost:8081/redoc] or [http://localhost:8081/docs]
+Find the documentation: http://localhost:8081/redoc or http://localhost:8081/docs
 
-Find the openapi schema: [http://localhost:8081/openapi.json]
+Find the openapi schema: http://localhost:8081/openapi.json
 
 ---
 

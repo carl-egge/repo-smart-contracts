@@ -1,7 +1,9 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import HelloWorld from '@/components/HelloWorld'
-import Posts from '@/components/Posts'
+//import HelloWorld from '@/components/HelloWorld'
+import ContractsList from '@/components/ContractsList'
+import Contract from '@/components/Contract'
+import AddContract from '@/components/AddContract'
 
 Vue.use(Router)
 
@@ -9,14 +11,20 @@ export default new Router({
   mode: 'history',
   routes: [
     {
-      path: '/posts',
-      name: 'Posts',
-      component: Posts
+      path: '/',
+      alias: '/contracts',
+      name: 'Contracts',
+      component: ContractsList
     },
     {
-      path: '/',
-      name: 'HelloWorld',
-      component: HelloWorld
+      path: '/contracts/:id',
+      name: 'ContractDetails',
+      component: Contract
+    },
+    {
+      path: '/add',
+      name: 'AddContract',
+      component: AddContract
     }
   ]
 })

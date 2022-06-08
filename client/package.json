@@ -1,7 +1,7 @@
 {
   "name": "client",
   "version": "1.0.0",
-  "description": "A Vue.js project",
+  "description": "Vue.js frontend for Smart Contract Repository",
   "private": true,
   "scripts": {
     "dev": "webpack-dev-server --inline --progress --config build/webpack.dev.conf.js",
