@@ -16,4 +16,7 @@ export default {
   delete(id) {
     return Api().delete(`api/contracts/${id}`);
   },
+  deleteVers(id, vers) {
+    return Api().delete(`api/contracts/${id}?vers=${vers}`);
+  },
 }

@@ -8,6 +8,8 @@
         </span>
         <br />
         <span>Description: {{ item.description }}</span>
+        <br />
+        <span>ID: {{ item.id }}</span>
       </p>
     </div>
   </div>
