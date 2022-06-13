@@ -144,7 +144,7 @@ export default {
 }
 .my-editor {
   /* we dont use `language-` classes anymore so thats why we need to add background and text color manually */
-  background: #2d2d2d;
+  background: #eee; /*#2d2d2d;*/
   color: #ccc;
 
   /* you must provide font-family font-size line-height. Example: */

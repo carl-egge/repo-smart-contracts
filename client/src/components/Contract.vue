@@ -1,240 +1,201 @@
 <template>
   <div>
-    <h3>
-      {{ this.title }}
-      <span class="fs-6 text-secondary">
-        ({{ this.contract.id }})
-        <button
-          class="btn btn-outline-secondary"
-          style="
-            --bs-btn-padding-y: 0.2rem;
-            --bs-btn-padding-x: 0.3rem;
-            --bs-btn-font-size: 0.3rem;
-          "
-          @click="copyToClipBoard(contract.id)"
+    <b-container class="px-0 mb-2" fluid>
+      <b-row align-h="start" align-v="center">
+        <b-col cols="auto" style="font-size: 1.85rem">
+          <strong>{{ this.title }}</strong>
+        </b-col>
+        <b-col class="text-secondary">
+          ({{ this.contract.id }})
+          <b-button
+            variant="outline-secondary"
+            class="id-copy-button"
+            @click="copyToClipBoard(contract.id)"
+          >
+            <b-icon icon="clipboard"></b-icon>
+          </b-button>
+        </b-col>
+      </b-row>
+      <b-row align-h="start" align-v="center">
+        <b-col cols="auto">
+          <b-dropdown
+            id="choose-Version"
+            variant="outline-secondary"
+            class="m-md-2"
+            size="sm"
+          >
+            <template #button-content> Version: {{ version }} </template>
+            <b-dropdown-item
+              v-for="vers in contract.versions"
+              :key="vers.vid"
+              @click="changeVersion(vers.vid)"
+            >
+              Version: {{ vers.vid }}
+            </b-dropdown-item>
+          </b-dropdown>
+        </b-col>
+        <b-col cols="6">
+          <b>Version Timestamp:</b> {{ this.timestamp }} (UTC)
+        </b-col>
+        <b-col>
+          <b-button
+            type="button"
+            variant="outline-secondary"
+            size="sm"
+            @click="deleteContractVersion()"
+          >
+            Delete Version {{ version }}
+          </b-button>
+        </b-col>
+      </b-row>
+    </b-container>
+
+    <b-container class="code-section p-2" fluid>
+      <!-- Title -->
+      <b-row align-v="center" class="mb-2">
+        <b-col
+          ><label for="inline-form-input-title">
+            <strong>Title:</strong>
+          </label></b-col
         >
-          <copy-icon></copy-icon>
-        </button>
-      </span>
-    </h3>
-    <div class="mx-2 my-4">
-      <div class="container px-0 mx-0">
-        <div class="row justify-content-start align-items-center">
-          <div class="ml-0 col-2">
-            <div class="dropdown">
-              <button
-                class="btn btn-outline-secondary dropdown-toggle btn-sm"
-                type="button"
-                id="dropdownMenuButton1"
-                data-bs-toggle="dropdown"
-                aria-expanded="false"
-              >
-                Version: {{ this.version }}
-              </button>
-              <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                <li v-for="vers in contract.versions" :key="vers.vid">
-                  <a class="dropdown-item" @click="changeVersion(vers.vid)"
-                    >Version: {{ vers.vid }}</a
-                  >
-                </li>
-              </ul>
-            </div>
-          </div>
-          <div class="col-6">
-            <b>Version Timestamp:</b>
-            {{ this.timestamp }} (UTC)
-          </div>
-          <div class="col-4">
-            <button
-              type="button"
-              class="btn btn-outline-secondary btn-sm"
-              @click="deleteContractVersion()"
-            >
-              Delete Version {{ this.version }}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <br />
-
-      <div class="p-2 code-section">
-        <!-- Title -->
-        <div class="container my-3 mx-0 px-0">
-          <div class="row g-3 align-items-center">
-            <div class="col-2 mx-2">
-              <label for="titleTextInput" class="form-label"
-                ><b>Title:</b></label
-              >
-            </div>
-            <div class="col-8">
-              <input
-                type="text"
-                id="titleTextInput"
-                class="form-control"
-                v-model="title"
-                :disabled="disabletitle"
-              />
-            </div>
-            <div class="col-auto">
-              <button
-                class="btn btn-outline-secondary"
-                style="
-                  --bs-btn-padding-y: 0.2rem;
-                  --bs-btn-padding-x: 0.3rem;
-                  --bs-btn-font-size: 0.3rem;
-                "
-                @click="copyToClipBoard(contract.title)"
-              >
-                <copy-icon></copy-icon>
-              </button>
-              <button
-                class="btn btn-outline-secondary"
-                style="
-                  --bs-btn-padding-y: 0.2rem;
-                  --bs-btn-padding-x: 0.3rem;
-                  --bs-btn-font-size: 0.3rem;
-                "
-                @click="edit('title')"
-              >
-                <edit-icon></edit-icon>
-              </button>
-            </div>
-          </div>
-        </div>
-        <!-- Description -->
-        <div class="container my-3 mx-0 px-0">
-          <div class="row g-3 align-items-center">
-            <div class="col-2 mx-2">
-              <label for="descriptionTextInput" class="form-label"
-                ><b>Description:</b></label
-              >
-            </div>
-            <div class="col-8">
-              <input
-                type="text"
-                id="descriptionTextInput"
-                class="form-control"
-                v-model="description"
-                :disabled="disabledesc"
-              />
-            </div>
-            <div class="col-auto">
-              <button
-                class="btn btn-outline-secondary"
-                style="
-                  --bs-btn-padding-y: 0.2rem;
-                  --bs-btn-padding-x: 0.3rem;
-                  --bs-btn-font-size: 0.3rem;
-                "
-                @click="copyToClipBoard(contract.description)"
-              >
-                <copy-icon></copy-icon>
-              </button>
-              <button
-                class="btn btn-outline-secondary"
-                style="
-                  --bs-btn-padding-y: 0.2rem;
-                  --bs-btn-padding-x: 0.3rem;
-                  --bs-btn-font-size: 0.3rem;
-                "
-                @click="edit('desc')"
-              >
-                <edit-icon></edit-icon>
-              </button>
-            </div>
-          </div>
-        </div>
-        <p>
-          <b>Sourcecode:</b>
-          <span class="fs-6 text-end text-secondary">
-            <button
-              class="btn btn-outline-secondary"
-              style="
-                --bs-btn-padding-y: 0.2rem;
-                --bs-btn-padding-x: 0.3rem;
-                --bs-btn-font-size: 0.3rem;
-              "
-              @click="copyToClipBoard(sourcecode)"
-            >
-              <copy-icon></copy-icon>
-            </button>
-          </span>
-        </p>
+        <b-col cols="8">
+          <b-form-input
+            type="text"
+            id="inline-form-input-title"
+            class="mb-2 mr-sm-2 mb-sm-0"
+            placeholder="..."
+            v-model="title"
+            :disabled="disabletitle"
+          ></b-form-input>
+        </b-col>
+        <b-col>
+          <b-button
+            variant="outline-secondary"
+            class="icon-button"
+            @click="copyToClipBoard(contract.title)"
+          >
+            <b-icon icon="clipboard"></b-icon>
+          </b-button>
+          <b-button
+            variant="outline-secondary"
+            class="icon-button"
+            @click="edit('title')"
+          >
+            <b-icon icon="pen"></b-icon>
+          </b-button>
+        </b-col>
+      </b-row>
+      <!-- Description -->
+      <b-row align-v="center" class="mb-4">
+        <b-col
+          ><label for="inline-form-input-desc">
+            <strong>Description:</strong>
+          </label></b-col
+        >
+        <b-col cols="8">
+          <b-form-input
+            type="text"
+            id="inline-form-input-desc"
+            class="mb-2 mr-sm-2 mb-sm-0"
+            placeholder="..."
+            v-model="description"
+            :disabled="disabledesc"
+          ></b-form-input>
+        </b-col>
+        <b-col>
+          <b-button
+            variant="outline-secondary"
+            class="icon-button"
+            @click="copyToClipBoard(contract.description)"
+          >
+            <b-icon icon="clipboard"></b-icon>
+          </b-button>
+          <b-button
+            variant="outline-secondary"
+            class="icon-button"
+            @click="edit('desc')"
+          >
+            <b-icon icon="pen"></b-icon>
+          </b-button>
+        </b-col>
+      </b-row>
+      <!-- Source Code -->
+      <b-row align-v="center" class="m-2">
+        <strong>Sourcecode: </strong>
+        <b-button
+          variant="outline-secondary"
+          class="icon-button ml-2"
+          @click="copyToClipBoard(sourcecode)"
+        >
+          <b-icon icon="clipboard"></b-icon>
+        </b-button>
         <prism-editor
           class="my-editor height-300"
           v-model="sourcecode"
           :highlight="highlighter"
           line-numbers
-        ></prism-editor
-        ><br />
-        <p>
-          <b>Bytecode:</b>
-          <span class="fs-6 text-end text-secondary">
-            <button
-              class="btn btn-outline-secondary"
-              style="
-                --bs-btn-padding-y: 0.2rem;
-                --bs-btn-padding-x: 0.3rem;
-                --bs-btn-font-size: 0.3rem;
-              "
-              @click="copyToClipBoard(bytecode)"
-            >
-              <copy-icon></copy-icon>
-            </button>
-          </span>
-        </p>
+        >
+        </prism-editor>
+      </b-row>
+      <!-- Byte Code -->
+      <b-row align-v="center" class="m-2">
+        <strong>Bytecode: </strong>
+        <b-button
+          variant="outline-secondary"
+          class="icon-button ml-2"
+          @click="copyToClipBoard(bytecode)"
+        >
+          <b-icon icon="clipboard"></b-icon>
+        </b-button>
         <prism-editor
           class="my-editor height-300"
           v-model="bytecode"
           :highlight="highlighter"
           line-numbers
-        ></prism-editor
-        ><br />
-        <p>
-          <b>ABI:</b>
-          <span class="fs-6 text-end text-secondary">
-            <button
-              class="btn btn-outline-secondary"
-              style="
-                --bs-btn-padding-y: 0.2rem;
-                --bs-btn-padding-x: 0.3rem;
-                --bs-btn-font-size: 0.3rem;
-              "
-              @click="copyToClipBoard(abi)"
-            >
-              <copy-icon></copy-icon>
-            </button>
-          </span>
-        </p>
+        >
+        </prism-editor>
+      </b-row>
+      <!-- ABI -->
+      <b-row align-v="center" class="m-2">
+        <strong>ABI: </strong>
+        <b-button
+          variant="outline-secondary"
+          class="icon-button ml-2"
+          @click="copyToClipBoard(abi)"
+        >
+          <b-icon icon="clipboard"></b-icon>
+        </b-button>
         <prism-editor
           class="my-editor height-300"
           v-model="abi"
           :highlight="highlighter"
           line-numbers
-        ></prism-editor>
-        <div class="row mt-4">
-          <div class="col my-3">
-            <button
-              type="button"
-              class="btn btn-outline-danger w-100"
-              @click="deleteContract()"
-            >
-              Delete This Contact
-            </button>
-          </div>
-          <div class="col my-3">
-            <button
-              type="submit"
-              class="btn btn-outline-success w-100"
-              @click="saveContract()"
-            >
-              Save Changes
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+        >
+        </prism-editor>
+      </b-row>
+      <b-row>
+        <b-col>
+          <b-button
+            type="button"
+            variant="outline-danger"
+            block
+            @click="deleteContract()"
+          >
+            Delete this Contract
+          </b-button>
+        </b-col>
+        <b-col>
+          <b-button
+            type="submit"
+            variant="outline-success"
+            block
+            @click="saveContract()"
+          >
+            Save Changes
+          </b-button>
+        </b-col>
+      </b-row>
+    </b-container>
   </div>
 </template>
 
@@ -356,7 +317,7 @@ export default {
 }
 .my-editor {
   /* we dont use `language-` classes anymore so thats why we need to add background and text color manually */
-  background: #2d2d2d;
+  background: #eee; /*#2d2d2d;*/
   color: #ccc;
 
   /* you must provide font-family font-size line-height. Example: */
@@ -364,11 +325,23 @@ export default {
   font-size: 14px;
   line-height: 1.5;
   padding: 5px;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
   border-radius: 4px;
 }
 
 .code-section {
   border-radius: 4px;
   border: 1.5px solid #ccc;
+}
+
+.id-copy-button {
+  padding: 0.1rem 0.35rem;
+  font-size: 0.7rem;
+}
+
+.icon-button {
+  padding: 0.3rem 0.3rem;
+  font-size: 0.9rem;
 }
 </style>
