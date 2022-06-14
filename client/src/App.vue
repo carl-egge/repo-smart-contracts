@@ -8,10 +8,6 @@
         </b-navbar-brand>
         <b-nav-item to="/">Smart Contracts List</b-nav-item>
         <b-nav-item to="/add">Add Smart Contract</b-nav-item>
-        <!-- Just for testing -->
-        <b-nav-item to="/contracts/62a0a039e0d82ba44f875573"
-          >One Smart Contract</b-nav-item
-        >
       </b-navbar-nav>
       <b-navbar-nav class="ml-auto">
         <b-nav-item
@@ -39,6 +35,16 @@
 <script>
 export default {
   name: "App",
+  methods: {
+    makeToast(title, msg, variant = null) {
+      this.toastCount++;
+      this.$bvToast.toast(msg, {
+        title: title,
+        variant: variant,
+        autoHideDelay: 5000,
+      });
+    },
+  },
 };
 </script>
 

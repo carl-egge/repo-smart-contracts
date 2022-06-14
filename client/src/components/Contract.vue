@@ -119,6 +119,8 @@
           </b-button>
         </b-col>
       </b-row>
+    </b-container>
+    <b-container class="mt-2 code-section p-2" fluid>
       <!-- Source Code -->
       <b-row align-v="center" class="m-2">
         <strong>Sourcecode: </strong>
@@ -237,9 +239,16 @@ export default {
     this.getContract(this.$route.params.id);
   },
   methods: {
+    /**
+     * Set highlighting on prism editors
+     */
     highlighter(code) {
       return highlight(code, languages.js); // languages.<insert language> to return html with markup
     },
+
+    /**
+     * Update the variables on the page
+     */
     setCode(vid) {
       this.title = this.contract.title;
       this.description = this.contract.description;
@@ -254,10 +263,18 @@ export default {
         : "null";
       this.findTimestamp(this.version);
     },
+
+    /**
+     * Dropdown change version of contract
+     */
     changeVersion(vid) {
       this.version = vid;
       this.setCode(vid);
     },
+
+    /**
+     * Format the timestamp of the version
+     */
     findTimestamp(vid) {
       var tmp = new Date(this.contract.versions[vid - 1].created);
       this.timestamp = tmp.toLocaleDateString("de-DE", {
@@ -265,6 +282,10 @@ export default {
         minute: "numeric",
       });
     },
+
+    /**
+     * Buttons to activate textfields of text or description
+     */
     edit(prop) {
       if (prop == "desc") {
         const temp = this.disabledesc;
@@ -277,32 +298,113 @@ export default {
         return;
       }
     },
+
+    /**
+     * Check if string is empty or has value
+     */
+    hasValue(val) {
+      if (!(!val || val.length == 0 || val == "null")) return true;
+      else false;
+    },
+
+    /**
+     * GET contract from server
+     */
     async getContract(iden) {
       const response = await ContractsService.get(iden);
       this.contract = response.data;
+      if (!this.contract) {
+        this.$parent.makeToast(
+          "Error",
+          `The contract ID is unknown.`,
+          "danger"
+        );
+        this.$router.push("/");
+      }
       this.version = this.contract.latestVersion;
       this.setCode(this.version);
     },
+
+    /**
+     * PUT to update contract in database
+     */
     async saveContract() {
       const data = {
         title: this.title,
-        description: this.description,
-        sourcecode: this.sourcecode,
-        bytecode: this.bytecode,
-        abi: this.abi,
       };
+      if (this.hasValue(this.description)) data.description = this.description;
+      if (this.hasValue(this.sourcecode)) data.sourcecode = this.sourcecode;
+      if (this.hasValue(this.bytecode)) data.bytecode = this.bytecode;
+      if (this.hasValue(this.abi)) data.abi = this.abi;
       const response = await ContractsService.update(this.contract.id, data);
+      if (response.status == "200") {
+        this.$parent.makeToast(
+          "200 :: Success",
+          `The contract ${response.data.id} was saved.`,
+          "success"
+        );
+      } else {
+        this.$parent.makeToast(
+          "422 :: Error",
+          "Something went wrong.",
+          "danger"
+        );
+      }
       this.getContract(this.$route.params.id);
     },
+
+    /**
+     * DELETE a contract from database
+     */
     async deleteContract() {
-      await ContractsService.delete(this.contract.id);
-      this.$router.push("/");
+      const response = await ContractsService.delete(this.contract.id);
+      if (response.status == "204") {
+        this.$parent.makeToast(
+          "204 :: Success",
+          "The contract was deleted.",
+          "success"
+        );
+        this.$router.push("/");
+      } else {
+        this.$parent.makeToast(
+          "422 :: Error",
+          "Something went wrong.",
+          "danger"
+        );
+        this.getContract(this.contract.id);
+      }
     },
+
+    /**
+     * DELETE a single version of the contract from the database
+     */
     async deleteContractVersion() {
       if (this.contract.versions.length == 1) return this.deleteContract();
-      await ContractsService.deleteVers(this.contract.id, this.version);
-      this.getContract(this.contract.id);
+      const temp_version = this.version;
+      const response = await ContractsService.deleteVers(
+        this.contract.id,
+        this.version
+      );
+      if (response.status == "204") {
+        this.$parent.makeToast(
+          "204 :: Success",
+          `Version ${temp_version} of contract ${this.contract.id} was deleted.`,
+          "success"
+        );
+        this.getContract(this.contract.id);
+      } else {
+        this.$parent.makeToast(
+          "422 :: Error",
+          "Something went wrong.",
+          "danger"
+        );
+        this.getContract(this.contract.id);
+      }
     },
+
+    /**
+     * Helper function to copy values to the users clipboard
+     */
     async copyToClipBoard(textToCopy) {
       await navigator.clipboard.writeText(textToCopy);
     },
@@ -312,9 +414,6 @@ export default {
 
 
 <style scoped>
-.height-300 {
-  height: 300px;
-}
 .my-editor {
   /* we dont use `language-` classes anymore so thats why we need to add background and text color manually */
   background: #eee; /*#2d2d2d;*/
@@ -328,6 +427,10 @@ export default {
   margin-top: 0.5rem;
   margin-bottom: 0.5rem;
   border-radius: 4px;
+}
+
+.height-300 {
+  height: 300px;
 }
 
 .code-section {

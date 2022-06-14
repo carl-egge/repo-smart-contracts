@@ -111,13 +111,24 @@ export default {
     };
   },
   methods: {
+    /**
+     * Set highlighting on prism editors
+     */
     highlighter(code) {
       return highlight(code, languages.js); // languages.<insert language> to return html with markup
     },
+
+    /**
+     * Check if string is empty or has value
+     */
     hasValue(val) {
       if (!(!val || val.length == 0 || val == "null")) return true;
       else false;
     },
+
+    /**
+     * POST to create a new contract in the database
+     */
     async createContract() {
       if (this.title.length == 0) {
         alert("Title can't be emtpy.");
@@ -131,7 +142,20 @@ export default {
       if (this.hasValue(this.bytecode)) data.bytecode = this.bytecode;
       if (this.hasValue(this.abi)) data.abi = this.abi;
       const response = await ContractsService.create(data);
-      this.$router.push(`/contracts/${response.data.id}`);
+      if (response.status == "201") {
+        this.$parent.makeToast(
+          "201 :: Success",
+          `The contract ${response.data.id} was saved.`,
+          "success"
+        );
+        this.$router.push(`/contracts/${response.data.id}`);
+      } else {
+        this.$parent.makeToast(
+          "422 :: Error",
+          "Something went wrong.",
+          "danger"
+        );
+      }
     },
   },
 };
@@ -139,9 +163,6 @@ export default {
 
 
 <style scoped>
-.height-200 {
-  height: 200px;
-}
 .my-editor {
   /* we dont use `language-` classes anymore so thats why we need to add background and text color manually */
   background: #eee; /*#2d2d2d;*/
@@ -153,6 +174,10 @@ export default {
   line-height: 1.5;
   padding: 5px;
   border-radius: 4px;
+}
+
+.height-200 {
+  height: 200px;
 }
 
 .code-section {
