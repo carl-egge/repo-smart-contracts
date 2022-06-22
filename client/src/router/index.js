@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 //import HelloWorld from '@/components/HelloWorld'
-import ContractsList from '@/components/ContractsList'
+import ContractsList from '@/components/ContractsTable'
 import Contract from '@/components/Contract'
 import AddContract from '@/components/AddContract'
 
