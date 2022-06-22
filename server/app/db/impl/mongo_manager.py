@@ -1,5 +1,6 @@
 from datetime import datetime
 import logging
+import re
 from turtle import title
 from typing import List, Union
 
@@ -111,6 +112,7 @@ class MongoManager(DatabaseManager):
         new_sourcecode = contract.sourcecode if contract.sourcecode else contract_q["versions"][new_vid-2]["content"]["sourcecode"]
         new_bytecode = contract.bytecode if contract.bytecode else contract_q["versions"][new_vid-2]["content"]["bytecode"]
         new_abi = contract.abi if contract.abi else contract_q["versions"][new_vid-2]["content"]["abi"]
+        new_pragma = self.get_compiler_version(contract.sourcecode) if contract.sourcecode else contract_q["versions"][new_vid-2]["content"]["compilerversion"]
         await self.db.contracts.update_one( {'_id': ObjectId(contract_id)},
                                             {
                                                "$set": {
@@ -125,6 +127,7 @@ class MongoManager(DatabaseManager):
                                                         "vid": new_vid,
                                                         "created": datetime.utcnow(),
                                                         "content": {
+                                                            "compilerversion": new_pragma,
                                                             "sourcecode": new_sourcecode,
                                                             "bytecode": new_bytecode,
                                                             "abi": new_abi
@@ -139,6 +142,7 @@ class MongoManager(DatabaseManager):
     # INSERT : insert a new contract in the database
     #
     async def add_contract(self, contract: ContractIn):
+        pragma = self.get_compiler_version(contract.sourcecode)
         new =   await self.db.contracts.insert_one(
                     { 
                         "title": contract.title,
@@ -149,6 +153,7 @@ class MongoManager(DatabaseManager):
                                 "vid": 1,
                                 "created": datetime.utcnow(),
                                 "content": {
+                                    "compilerversion": pragma,
                                     "sourcecode": contract.sourcecode,
                                     "bytecode": contract.bytecode,
                                     "abi": contract.abi
@@ -160,3 +165,18 @@ class MongoManager(DatabaseManager):
         res = await self.db.contracts.find_one({'_id': ObjectId(new.inserted_id)})
         return ContractDB(**res, id=res['_id'])
 
+    #
+    # Helperfunctions
+    #
+    def get_compiler_version(self, code):
+        check_version = None
+        if (isinstance(code, str)):
+            check_version = re.search(r'pragma solidity [<>^]?=?\s*([\d.]+)', code)
+        else:
+            # Data structure: [{"file1.sol":"sourcecode"},{"file2.sol":"sourcecode"}]
+            # Assumption: First file is always the main file
+            check_version = re.search(r'pragma solidity [<>^]?=?\s*([\d.]+)', code[1])
+        if (check_version):
+            return check_version.group(1)
+        else:
+            return None

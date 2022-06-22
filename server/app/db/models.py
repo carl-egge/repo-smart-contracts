@@ -3,7 +3,7 @@
     It will not be confused with response objects - if you will need anything other than a simple CRUD.
 """
 from email.policy import default
-from typing import Optional, List
+from typing import Optional, List, Union
 from datetime import datetime
 
 from bson import ObjectId
@@ -35,8 +35,14 @@ class BaseDBModel(BaseModel):
             temp = string.split('_')
             return temp[0] + ''.join(ele.title() for ele in temp[1:])
 
+# class File(BaseModel):
+#     filename: str
+#     filecontent: str
+
+# sourcecode: Optional[Union[str, List[File]]]
 
 class Content(BaseModel):
+    compilerversion: Optional[str]
     sourcecode: Optional[str]
     bytecode: Optional[str]
     abi: Optional[str]

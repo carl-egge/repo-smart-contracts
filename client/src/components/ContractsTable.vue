@@ -91,11 +91,16 @@
           {{ data.value.length }}
         </template>
 
+        <!-- Row: Compiler Version -->
+        <template #cell(compilerversion)="data">
+          {{ data.value }}
+        </template>
+
         <!-- Row: ID -->
         <template #cell(id)="data">
-          <router-link :to="'/contracts/' + data.value">{{
-            data.value
-          }}</router-link>
+          <router-link :to="'/contracts/' + data.value">
+            {{ data.value }}
+          </router-link>
         </template>
 
         <!-- Row: Actions (Buttons) -->
@@ -180,6 +185,12 @@ export default {
           sortable: true,
           class: "text-center",
         },
+        {
+          key: "compilerversion",
+          label: "Compiler Version",
+          sortable: true,
+          class: "text-center",
+        },
         { key: "actions", label: "Actions", class: "text-center" },
       ],
 
@@ -209,6 +220,10 @@ export default {
       this.isBusy = true;
       const response = await ContractsService.getAll();
       this.contracts = response.data;
+      this.contracts.forEach((element) => {
+        element.compilerversion =
+          element.versions[element.latestVersion - 1].content.compilerversion;
+      });
       this.isBusy = false;
     },
 
