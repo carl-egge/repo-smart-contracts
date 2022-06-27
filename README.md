@@ -1,19 +1,34 @@
 # Repository for Smart Contracts
 
-> Docker Compose with 3 Container: Frontend Vue, Backend FastAPI, Database MongoDB
+> This project was built as part of a bachelor thesis about smart contract gas optimization. It is a full stack application that can be used to store and interact with smart contract source code.
 
-### Fork from this resource
+## Installation
 
-**Original Vue Template:**
+- Build project: `docker-compose build`
+- Run project: `docker-compose up`
+
+## Features
+
+- Orchestration done with docker compose
+- Frontend container with vueJS, bootstrap and axios
+- Backend container with fastAPI, pydantic and poetry
+- Database container with mongoDB
+- Asynchronous OAS API with automatic documentation
+
+## Credits
+
+**Docker Compose Template:**
+https://github.com/webdevjourneyWDJ/Docker_Projects
+
+**Original VueJS Template:**
 https://vuejs-templates.github.io/webpack/
 
-**Video:**
-https://www.youtube.com/watch?v=4qYRs0Yzh9I
+**Original fastAPI Template:**
+https://github.com/michaldev/fastapi-async-mongodb
 
-**Git:**
-https://github.com/webdevjourneyWDJ/Docker_Projects/blob/master/server/src/app.js
+---
 
-### Hints for Developing
+## Hints for Developing
 
 **Build:**
 `docker-compose build`
@@ -44,8 +59,8 @@ Find the openapi schema: http://localhost:8081/openapi.json
 
 **Enter Mongo Shell:**
 
-- `docker.compose exec mongo bash`
-- `mongosh -u mongo_user -p mongo_password`
-- `use main_db`
-- `show collections`
-- `db.contracts.drop()`
+1. `docker-compose exec mongo bash`
+2. `mongosh`
+3. `use main_db`
+4. `show collections`
+5. `db.<collection_name>.<action>()`
