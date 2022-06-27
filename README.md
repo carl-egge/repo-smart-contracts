@@ -4,6 +4,7 @@
 
 ## Installation
 
+- Establish environment: `cp server/example.env server/.env`
 - Build project: `docker-compose build`
 - Run project: `docker-compose up`
 
