@@ -3,6 +3,7 @@ import logging
 import re
 from turtle import title
 from typing import List, Union
+from xmlrpc.client import DateTime
 
 from fastapi import HTTPException
 from bson import ObjectId
@@ -109,6 +110,8 @@ class MongoManager(DatabaseManager):
         # if some fields are not send in the body we want to keep the values from the last version
         new_title = contract.title if contract.title else contract_q["title"]
         new_description = contract.description if contract.description else contract_q["description"]
+        new_created = contract.created if contract.created else datetime.utcnow()
+        new_parents = contract.parents if contract.parents else [contract_q["latest_version"]]
         new_sourcecode = contract.sourcecode if contract.sourcecode else contract_q["versions"][new_vid-2]["content"]["sourcecode"]
         new_bytecode = contract.bytecode if contract.bytecode else contract_q["versions"][new_vid-2]["content"]["bytecode"]
         new_abi = contract.abi if contract.abi else contract_q["versions"][new_vid-2]["content"]["abi"]
@@ -125,7 +128,9 @@ class MongoManager(DatabaseManager):
                                                 "$push": {
                                                     "versions": { 
                                                         "vid": new_vid,
-                                                        "created": datetime.utcnow(),
+                                                        "message": contract.message,
+                                                        "created": new_created,
+                                                        "parents": new_parents,
                                                         "content": {
                                                             "compilerversion": new_pragma,
                                                             "sourcecode": new_sourcecode,
@@ -142,16 +147,21 @@ class MongoManager(DatabaseManager):
     # INSERT : insert a new contract in the database
     #
     async def add_contract(self, contract: ContractIn):
-        pragma = self.get_compiler_version(contract.sourcecode)
+        pragma = self.get_compiler_version(contract.sourcecode) if contract.sourcecode else None
+        created = contract.created if contract.created else datetime.utcnow()
         new =   await self.db.contracts.insert_one(
                     { 
                         "title": contract.title,
                         "description": contract.description,
+                        "source": contract.source,
+                        "source_file_path": contract.source_file_path,
                         "latest_version": 1,
                         "versions": [
                             { 
                                 "vid": 1,
-                                "created": datetime.utcnow(),
+                                "message": "Initial commit",
+                                "created": created,
+                                "parents": [],
                                 "content": {
                                     "compilerversion": pragma,
                                     "sourcecode": contract.sourcecode,
@@ -169,13 +179,7 @@ class MongoManager(DatabaseManager):
     # Helperfunctions
     #
     def get_compiler_version(self, code):
-        check_version = None
-        if (isinstance(code, str)):
-            check_version = re.search(r'pragma solidity [<>^]?=?\s*([\d.]+)', code)
-        else:
-            # Data structure: [{"file1.sol":"sourcecode"},{"file2.sol":"sourcecode"}]
-            # Assumption: First file is always the main file
-            check_version = re.search(r'pragma solidity [<>^]?=?\s*([\d.]+)', code[1])
+        check_version = re.search(r'pragma solidity [<>^]?=?\s*([\d.]+)', code)
         if (check_version):
             return check_version.group(1)
         else:
