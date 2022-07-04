@@ -50,6 +50,7 @@ class Version(BaseModel):
     vid: int = Field(default=1, description="Vesion ID")
     message: Optional[str] = Field(description="Optional commit message")
     created: datetime = Field(description="ISOdate of the creation of this version")
+    git_sha: Optional[str] = Field(description="GitHub commit sha")
     parents: List[int] = Field(description="To represent a tree a version can have multiple parents")
     content: Content = Field(description="This embedded document holds the code")
 
@@ -60,6 +61,7 @@ class ContractIn(BaseModel):
     source: Optional[str] = Field(default="Manually Uploaded", description="What is the source of this smart contract")
     source_file_path: Optional[str] = Field(description="What is the file path in the source location?")
     created: Optional[datetime] = Field(description="When was this smart contract created")
+    git_sha: Optional[str] = Field(description="GitHub commit sha")
     sourcecode: Optional[str] = Field(description="Enter the source code")
     bytecode: Optional[str] = Field(description="Optionally enter the byte code")
     abi: Optional[str] = Field(description="Optionally enter the application binary interface")
@@ -70,6 +72,7 @@ class ContractPatch(BaseModel):
     description: Optional[str] = Field(description="Change the description of this smart contract")
     message: Optional[str] = Field(description="Give the new version a commit message")
     created: Optional[datetime] = Field(description="When was the new version created")
+    git_sha: Optional[str] = Field(description="GitHub commit sha")
     parents: Optional[List[int]] = Field(exclude=True, description="After merging, a new version can have multiple parents")
     sourcecode: Optional[str] = Field(description="Update the source code")
     bytecode: Optional[str] = Field(description="Update the byte code")

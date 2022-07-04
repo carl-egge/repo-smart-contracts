@@ -1,6 +1,6 @@
 from typing import List, Union
 from urllib import response
-from fastapi import APIRouter, Depends, status, Response, Body
+from fastapi import APIRouter, Depends, status, Response, Query
 
 from app.db import DatabaseManager, get_database
 from app.db.models import Content, ContractDB, OID, ContractIn, ContractPatch
@@ -9,8 +9,8 @@ router = APIRouter()
 
 
 @router.get('/', response_model=List[ContractDB])
-async def all_contracts(db: DatabaseManager = Depends(get_database)):
-    contracts = await db.get_contracts()
+async def all_contracts(src: Union[str, None] = Query(default=None, title="Only contracts from a specified source repository.", description="must be URIencoded"), db: DatabaseManager = Depends(get_database)):
+    contracts = await db.get_contracts(source_str=src)
     return contracts
 
 

@@ -40,9 +40,13 @@ class MongoManager(DatabaseManager):
     #
     # READS : all contracts from the database are returned in an array
     #
-    async def get_contracts(self) -> List[ContractDB]:
+    async def get_contracts(self, source_str: Union[str, None]) -> List[ContractDB]:
         contracts_list = []
-        contracts_q = self.db.contracts.find()
+        contracts_q = []
+        if source_str:
+            contracts_q = self.db.contracts.find({'source': source_str})
+        else:
+            contracts_q = self.db.contracts.find()
         async for contract in contracts_q:
             contracts_list.append(ContractDB(**contract, id=contract['_id']))
         return contracts_list
@@ -130,6 +134,7 @@ class MongoManager(DatabaseManager):
                                                         "vid": new_vid,
                                                         "message": contract.message,
                                                         "created": new_created,
+                                                        "git_sha": contract.git_sha,
                                                         "parents": new_parents,
                                                         "content": {
                                                             "compilerversion": new_pragma,
@@ -161,6 +166,7 @@ class MongoManager(DatabaseManager):
                                 "vid": 1,
                                 "message": "Initial commit",
                                 "created": created,
+                                "git_sha": contract.git_sha,
                                 "parents": [],
                                 "content": {
                                     "compilerversion": pragma,

@@ -22,7 +22,7 @@ class DatabaseManager(object):
         pass
 
     @abstractmethod
-    async def get_contracts(self) -> List[ContractDB]:
+    async def get_contracts(self, source_str) -> List[ContractDB]:
         pass
 
     @abstractmethod
