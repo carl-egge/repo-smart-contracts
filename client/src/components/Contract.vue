@@ -34,10 +34,7 @@
             </b-dropdown-item>
           </b-dropdown>
         </b-col>
-        <b-col cols="6">
-          <b>Version Timestamp:</b> {{ this.timestamp }} (UTC)
-        </b-col>
-        <b-col>
+        <b-col cols="auto">
           <b-button
             type="button"
             variant="outline-secondary"
@@ -47,6 +44,14 @@
             Delete Version {{ version }}
           </b-button>
         </b-col>
+      </b-row>
+      <b-row align-h="start" align-v="center" class="ml-2">
+        <b-col> <b>Version Timestamp:</b> {{ this.timestamp }} (UTC) </b-col>
+        <b-col> <b>Parent Versions:</b> [{{ this.parents }}] </b-col>
+      </b-row>
+      <b-row align-h="start" align-v="center" class="ml-2">
+        <b-col> <b>Commit Message:</b> {{ this.commitmsg }} </b-col>
+        <b-col> <b>Git Sha:</b> {{ this.git_sha }} </b-col>
       </b-row>
     </b-container>
 
@@ -86,7 +91,7 @@
         </b-col>
       </b-row>
       <!-- Description -->
-      <b-row align-v="center" class="mb-4">
+      <b-row align-v="center" class="mb-2">
         <b-col
           ><label for="inline-form-input-desc">
             <strong>Description:</strong>
@@ -119,6 +124,60 @@
           </b-button>
         </b-col>
       </b-row>
+      <!-- Source -->
+      <b-row align-v="center" class="mb-2">
+        <b-col
+          ><label for="inline-form-input-src">
+            <strong>Source:</strong>
+          </label></b-col
+        >
+        <b-col cols="8">
+          <b-form-input
+            type="text"
+            id="inline-form-input-src"
+            class="mb-2 mr-sm-2 mb-sm-0"
+            placeholder="..."
+            v-model="source"
+            :disabled="true"
+          ></b-form-input>
+        </b-col>
+        <b-col>
+          <b-button
+            variant="outline-secondary"
+            class="icon-button"
+            @click="copyToClipBoard(contract.source)"
+          >
+            <b-icon icon="clipboard"></b-icon>
+          </b-button>
+        </b-col>
+      </b-row>
+      <!-- Source file path -->
+      <b-row align-v="center" class="mb-4">
+        <b-col
+          ><label for="inline-form-input-path">
+            <strong>Source file path:</strong>
+          </label></b-col
+        >
+        <b-col cols="8">
+          <b-form-input
+            type="text"
+            id="inline-form-input-path"
+            class="mb-2 mr-sm-2 mb-sm-0"
+            placeholder="..."
+            v-model="source_file_path"
+            :disabled="true"
+          ></b-form-input>
+        </b-col>
+        <b-col>
+          <b-button
+            variant="outline-secondary"
+            class="icon-button"
+            @click="copyToClipBoard(contract.source_file_path)"
+          >
+            <b-icon icon="clipboard"></b-icon>
+          </b-button>
+        </b-col>
+      </b-row>
     </b-container>
     <b-container class="mt-2 code-section p-2" fluid>
       <!-- Source Code -->
@@ -136,6 +195,7 @@
           v-model="sourcecode"
           :highlight="highlighter"
           line-numbers
+          placeholder="start typing here ..."
         >
         </prism-editor>
       </b-row>
@@ -154,6 +214,7 @@
           v-model="bytecode"
           :highlight="highlighter"
           line-numbers
+          placeholder="start typing here ..."
         >
         </prism-editor>
       </b-row>
@@ -172,6 +233,7 @@
           v-model="abi"
           :highlight="highlighter"
           line-numbers
+          placeholder="start typing here ..."
         >
         </prism-editor>
       </b-row>
@@ -191,13 +253,89 @@
             type="submit"
             variant="outline-success"
             block
-            @click="saveContract()"
+            @click="$bvModal.show('bv-modal')"
           >
             Save Changes
           </b-button>
         </b-col>
       </b-row>
     </b-container>
+
+    <!-- Save Modal -->
+    <b-modal id="bv-modal" hide-footer size="lg">
+      <template #modal-title> Save Smart Contract </template>
+      <div class="d-block">
+        <b-form-group
+          id="modal-input-group-1"
+          label="Update Message: (recommended)"
+          label-for="modal-input-1"
+        >
+          <b-form-input
+            id="modal-input-1"
+            v-model="new_commitmsg"
+            placeholder="start typing ..."
+          ></b-form-input>
+        </b-form-group>
+        <b-form-group
+          id="modal-input-group-2"
+          label="Git Sha: (optional)"
+          label-for="modal-input-2"
+        >
+          <b-form-input
+            id="modal-input-2"
+            v-model="new_git_sha"
+            placeholder="optional ..."
+          ></b-form-input>
+        </b-form-group>
+        <b-form-checkbox
+          v-model="show_new_parents"
+          name="switch-button-abi"
+          switch
+        >
+          Configure Parents
+        </b-form-checkbox>
+        <b-form-group
+          v-if="show_new_parents"
+          id="modal-input-group-3"
+          label="Parents: (optional)"
+          label-for="modal-input-3"
+        >
+          <b-form-select
+            v-model="new_parent1"
+            :options="contract.versions"
+            text-field="vid"
+            value-field="vid"
+            size="sm"
+            class="col-1"
+          >
+            <template #first>
+              <b-form-select-option :value="null">null</b-form-select-option>
+            </template>
+          </b-form-select>
+          <b-form-select
+            v-model="new_parent2"
+            :options="contract.versions"
+            text-field="vid"
+            value-field="vid"
+            size="sm"
+            class="col-1"
+          >
+            <template #first>
+              <b-form-select-option :value="null">null</b-form-select-option>
+            </template>
+          </b-form-select>
+        </b-form-group>
+      </div>
+      <b-button
+        class="mt-3"
+        variant="outline-success"
+        type="submit"
+        block
+        @click="saveContract()"
+      >
+        Save
+      </b-button>
+    </b-modal>
   </div>
 </template>
 
@@ -223,13 +361,23 @@ export default {
       contract: {},
       version: 1,
       timestamp: "loading ...",
+      parents: "loading ...",
+      commitmsg: "",
+      git_sha: "",
       sourcecode: "loading ...",
       bytecode: "loading ...",
       abi: "loading ...",
       title: "loading ...",
       description: "loading ...",
+      source: "loading ...",
+      source_file_path: "loading ...",
       disabledesc: true,
       disabletitle: true,
+      new_commitmsg: "",
+      new_parent1: null,
+      new_parent2: null,
+      new_git_sha: "",
+      show_new_parents: false,
     };
   },
   mounted() {
@@ -249,15 +397,20 @@ export default {
     setCode(vid) {
       this.title = this.contract.title;
       this.description = this.contract.description;
+      this.source = this.contract.source;
+      this.source_file_path = this.contract.source_file_path;
       this.sourcecode = this.contract.versions[vid - 1].content.sourcecode
         ? this.contract.versions[vid - 1].content.sourcecode
-        : "null";
+        : "";
       this.bytecode = this.contract.versions[vid - 1].content.bytecode
         ? this.contract.versions[vid - 1].content.bytecode
-        : "null";
+        : "";
       this.abi = this.contract.versions[vid - 1].content.abi
         ? this.contract.versions[vid - 1].content.abi
-        : "null";
+        : "";
+      this.parents = this.contract.versions[vid - 1].parents.toString();
+      this.commitmsg = this.contract.versions[vid - 1].message;
+      this.git_sha = this.contract.versions[vid - 1].git_sha;
       this.findTimestamp(this.version);
     },
 
@@ -326,13 +479,20 @@ export default {
      * PUT to update contract in database
      */
     async saveContract() {
+      this.$bvModal.hide("bv-modal");
       const data = {
         title: this.title,
       };
+      if (this.hasValue(this.new_commitmsg)) data.message = this.new_commitmsg;
+      if (this.hasValue(this.new_git_sha)) data.git_sha = this.new_git_sha;
       if (this.hasValue(this.description)) data.description = this.description;
       if (this.hasValue(this.sourcecode)) data.sourcecode = this.sourcecode;
       if (this.hasValue(this.bytecode)) data.bytecode = this.bytecode;
       if (this.hasValue(this.abi)) data.abi = this.abi;
+      let parents = [];
+      if (this.new_parent1) parents.push(this.new_parent1);
+      if (this.new_parent2) parents.push(this.new_parent2);
+      if (parents.length != 0) data.parents = parents;
       const response = await ContractsService.update(this.contract.id, data);
       if (response.status == "200") {
         this.$parent.makeToast(

@@ -158,14 +158,6 @@ export default {
     return {
       contracts: [],
 
-      items: [
-        {
-          isActive: true,
-          age: 40,
-          name: { first: "Dickerson", last: "Macdonald" },
-        },
-        { isActive: false, age: 21, name: { first: "Larsen", last: "Shaw" } },
-      ],
       fields: [
         {
           key: "title",
@@ -178,6 +170,11 @@ export default {
           label: "ID",
           sortable: true,
           class: "text-center",
+        },
+        {
+          key: "source",
+          label: "Source",
+          sortable: true,
         },
         {
           key: "versions",

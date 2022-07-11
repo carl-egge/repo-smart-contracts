@@ -17,7 +17,7 @@
           <img src="./assets/logo_ide_letters.png" class="mw-45" />
         </b-nav-item>
         <b-nav-item
-          href="https://github.com/carl-egge/repo-smart-contracts-v2"
+          href="https://github.com/carl-egge/repo-smart-contracts"
           target="_blank"
         >
           <img src="./assets/GitHub-Mark-Light-64px.png" class="mw-40" />
