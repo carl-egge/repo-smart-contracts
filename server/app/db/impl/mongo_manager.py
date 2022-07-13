@@ -40,11 +40,13 @@ class MongoManager(DatabaseManager):
     #
     # READS : all contracts from the database are returned in an array
     #
-    async def get_contracts(self, source_str: Union[str, None], limit: int, skip: int) -> List[ContractDB]:
+    async def get_contracts(self, source_str: Union[str, None], title_str: Union[str, None], limit: int, skip: int) -> List[ContractDB]:
         contracts_list = []
         contracts_q = []
         if source_str:
-            contracts_q = self.db.contracts.find({'source': source_str})
+            contracts_q = self.db.contracts.find({'source': {"$regex":source_str}})
+        elif title_str:
+            contracts_q = self.db.contracts.find({'title': {"$regex":title_str}})
         else:
             contracts_q = self.db.contracts.find()
         contracts_q.skip(skip).limit(limit)

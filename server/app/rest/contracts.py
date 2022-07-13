@@ -9,13 +9,14 @@ router = APIRouter()
 
 @router.get('/', response_model=List[ContractDB])
 async def all_contracts(response: Response,
-                        src: Union[str, None] = Query(default=None, title="Only contracts from a specified source repository.", description="must be URIencoded"),
+                        src: Union[str, None] = Query(default=None, title="Contract source", description="Only contracts from a specified source repository (must be URIencoded)."),
+                        title: Union[str,None] = Query(default=None, title="Contract title", description="Get contracts with a specified title."),
                         limit: int = Query(default=50, ge=1, le=200, title="Limit for Objects", description="Paginate the amount of returned objects (limit)."),
                         skip: int = Query(default=0, ge=0, title="Offset for Objects", description="Paginate the amount of returned objects (offset)."),
                         db: DatabaseManager = Depends(get_database)):
     db_size = await db.count_contracts()
     response.headers["X-Total-DB-Size"] = str(db_size)
-    contracts = await db.get_contracts(source_str=src,limit=limit,skip=skip)
+    contracts = await db.get_contracts(source_str=src,title_str=title,limit=limit,skip=skip)
     return contracts
 
 
