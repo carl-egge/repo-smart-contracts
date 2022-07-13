@@ -1,8 +1,8 @@
 import Api from '@/services/Api'
 
 export default {
-  getAll() {
-    return Api().get('api/contracts')
+  getAll(params) {
+    return Api().get('api/contracts', { params })
   },
   get(id) {
     return Api().get(`api/contracts/${id}`);

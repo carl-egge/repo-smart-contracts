@@ -29,7 +29,7 @@
                 id="filter-input"
                 v-model="filter"
                 type="search"
-                placeholder="Type to Search"
+                placeholder="Search on current page"
               ></b-form-input>
 
               <b-input-group-append>
@@ -58,6 +58,7 @@
               v-model="perPage"
               :options="pageOptions"
               size="sm"
+              @change="handlePageSizeChange($event)"
             ></b-form-select>
           </b-form-group>
         </b-col>
@@ -67,8 +68,6 @@
       <b-table
         :items="contracts"
         :fields="fields"
-        :current-page="currentPage"
-        :per-page="perPage"
         :filter="filter"
         :filter-included-fields="filterOn"
         :sort-by.sync="sortBy"
@@ -143,6 +142,7 @@
             align="fill"
             size="sm"
             class="my-0"
+            @change="handlePageChange($event)"
           ></b-pagination>
         </b-col>
       </b-row>
@@ -194,9 +194,10 @@ export default {
       // Table Settings
       isBusy: false,
       totalRows: 1,
+      totalDBsize: 0,
       currentPage: 1,
       perPage: 5,
-      pageOptions: [5, 10, 15, { value: 100, text: "Show a lot" }],
+      pageOptions: [5, 10, 25, 100],
       sortBy: "",
       sortDesc: true,
       sortDirection: "desc",
@@ -215,13 +216,31 @@ export default {
      */
     async getContracts() {
       this.isBusy = true;
-      const response = await ContractsService.getAll();
+      const params = this.getRequestParams(this.currentPage, this.perPage);
+      const response = await ContractsService.getAll(params);
+      this.totalRows = parseInt(response.headers["x-total-db-size"]);
       this.contracts = response.data;
       this.contracts.forEach((element) => {
         element.compilerversion =
           element.versions[element.latestVersion - 1].content.compilerversion;
       });
       this.isBusy = false;
+    },
+
+    /**
+     * getRequestParams
+     *
+     * calculate params for getContracts
+     */
+    getRequestParams(page, pageSize) {
+      let params = {};
+      if (page) {
+        params["skip"] = (page - 1) * pageSize;
+      }
+      if (pageSize) {
+        params["limit"] = pageSize;
+      }
+      return params;
     },
 
     /**
@@ -279,6 +298,27 @@ export default {
     onFiltered(filteredItems) {
       this.totalRows = filteredItems.length;
       this.currentPage = 1;
+    },
+
+    /**
+     * handlePaginationChange
+     *
+     * Trigger pagination to request new objects
+     */
+    handlePageChange(value) {
+      this.currentPage = value;
+      this.getContracts();
+    },
+
+    /**
+     * handlePageSizeChange
+     *
+     * update contracts if Pagination size is changed
+     */
+    handlePageSizeChange(value) {
+      this.perPage = value;
+      this.currentPage = 1;
+      this.getContracts();
     },
   },
 };

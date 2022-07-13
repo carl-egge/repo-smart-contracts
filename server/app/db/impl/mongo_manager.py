@@ -40,16 +40,23 @@ class MongoManager(DatabaseManager):
     #
     # READS : all contracts from the database are returned in an array
     #
-    async def get_contracts(self, source_str: Union[str, None]) -> List[ContractDB]:
+    async def get_contracts(self, source_str: Union[str, None], limit: int, skip: int) -> List[ContractDB]:
         contracts_list = []
         contracts_q = []
         if source_str:
             contracts_q = self.db.contracts.find({'source': source_str})
         else:
             contracts_q = self.db.contracts.find()
+        contracts_q.skip(skip).limit(limit)
         async for contract in contracts_q:
             contracts_list.append(ContractDB(**contract, id=contract['_id']))
         return contracts_list
+
+    #
+    # READ : return the amount of elements in the database
+    #
+    async def count_contracts(self) -> int:
+        return await self.db.contracts.count_documents({})
 
     #
     # READ : a single contract or one version of its code is returned

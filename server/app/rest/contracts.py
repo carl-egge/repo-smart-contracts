@@ -1,5 +1,4 @@
 from typing import List, Union
-from urllib import response
 from fastapi import APIRouter, Depends, status, Response, Query
 
 from app.db import DatabaseManager, get_database
@@ -9,8 +8,14 @@ router = APIRouter()
 
 
 @router.get('/', response_model=List[ContractDB])
-async def all_contracts(src: Union[str, None] = Query(default=None, title="Only contracts from a specified source repository.", description="must be URIencoded"), db: DatabaseManager = Depends(get_database)):
-    contracts = await db.get_contracts(source_str=src)
+async def all_contracts(response: Response,
+                        src: Union[str, None] = Query(default=None, title="Only contracts from a specified source repository.", description="must be URIencoded"),
+                        limit: int = Query(default=50, ge=1, le=200, title="Limit for Objects", description="Paginate the amount of returned objects (limit)."),
+                        skip: int = Query(default=0, ge=0, title="Offset for Objects", description="Paginate the amount of returned objects (offset)."),
+                        db: DatabaseManager = Depends(get_database)):
+    db_size = await db.count_contracts()
+    response.headers["X-Total-DB-Size"] = str(db_size)
+    contracts = await db.get_contracts(source_str=src,limit=limit,skip=skip)
     return contracts
 
 
