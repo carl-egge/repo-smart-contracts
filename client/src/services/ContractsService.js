@@ -2,13 +2,13 @@ import Api from '@/services/Api'
 
 export default {
   getAll(params) {
-    return Api().get('api/contracts', { params })
+    return Api().get('api/contracts/', { params })
   },
   get(id) {
     return Api().get(`api/contracts/${id}`);
   },
   create(data) {
-    return Api().post('api/contracts', data);
+    return Api().post('api/contracts/', data);
   },
   update(id, data) {
     return Api().put(`api/contracts/${id}`, data);

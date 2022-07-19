@@ -16,17 +16,6 @@
 - Database container with mongoDB
 - Asynchronous OAS API with automatic documentation
 
-## Credits
-
-**Docker Compose Template:**
-https://github.com/webdevjourneyWDJ/Docker_Projects
-
-**Original VueJS Template:**
-https://vuejs-templates.github.io/webpack/
-
-**Original fastAPI Template:**
-https://github.com/michaldev/fastapi-async-mongodb
-
 ---
 
 ## Hints for Developing

@@ -1,5 +1,5 @@
 {
-  "name": "client",
+  "name": "smartcontracts",
   "version": "1.0.0",
   "description": "Vue.js frontend for Smart Contract Repository",
   "private": true,
