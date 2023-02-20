@@ -1,6 +1,10 @@
-# Repository for Smart Contracts
+# Repository for Smart Contracts V2
 
 > This project was built as part of a bachelor thesis about smart contract gas optimization. It is a full stack application that can be used to store and interact with smart contract source code.
+
+## Version 2
+
+Version 2 will include a complete redesign of frontend and backend. The API will be a GET-only API with enhanced filter options and the client will be updated accordingly.
 
 ## Installation
 
