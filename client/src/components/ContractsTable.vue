@@ -3,8 +3,8 @@
     <h2>All Smart Contracts</h2>
     <b-container fluid>
       <!-- Add New Button -->
-      <b-row>
-        <b-col lg="2" md="2" sm="12">
+      <b-row class="mb-3" align-v="center">
+        <b-col cols="auto">
           <b-button
             @click="$router.push('/add')"
             variant="warning"
@@ -15,15 +15,8 @@
         </b-col>
 
         <!-- Filter -->
-        <b-col lg="5" md="5" sm="8">
-          <b-form-group
-            label="Filter"
-            label-for="filter-input"
-            label-cols-sm="3"
-            label-align-sm="right"
-            label-size="sm"
-            class="mb-3"
-          >
+        <b-col>
+          <b-form-group label-for="filter-input">
             <b-input-group size="sm">
               <b-form-input
                 id="filter-input"
@@ -42,24 +35,37 @@
         </b-col>
 
         <!-- Pagination: Set entries per page -->
-        <b-col lg="3" md="3" sm="4">
-          <b-form-group
-            label="Per page"
-            label-for="per-page-select"
-            label-cols-sm="6"
-            label-cols-md="4"
-            label-cols-lg="3"
-            label-align-sm="right"
-            label-size="sm"
-            class="mb-3"
-          >
-            <b-form-select
-              id="per-page-select"
-              v-model="perPage"
-              :options="pageOptions"
-              size="sm"
-              @change="handlePageSizeChange($event)"
-            ></b-form-select>
+        <b-col cols="auto">
+          <b-form-group label-for="per-page-select">
+            <b-input-group size="sm">
+              <b-form-select
+                id="per-page-select"
+                v-model="perPage"
+                :options="pageOptions"
+                @change="handlePageSizeChange($event)"
+              ></b-form-select>
+
+              <b-input-group-append>
+                <b-button :disabled="true"> Per Page </b-button>
+              </b-input-group-append>
+            </b-input-group>
+          </b-form-group>
+        </b-col>
+
+        <!-- Go to page -->
+        <b-col cols="auto">
+          <b-form-group label-for="go-to-input">
+            <b-input-group size="sm">
+              <b-form-input
+                id="go-to-input"
+                v-model="goTo"
+                type="number"
+              ></b-form-input>
+
+              <b-input-group-append>
+                <b-button @click="jumpPage($event)"> Go to page </b-button>
+              </b-input-group-append>
+            </b-input-group>
           </b-form-group>
         </b-col>
       </b-row>
@@ -203,6 +209,7 @@ export default {
       sortDirection: "desc",
       filter: null,
       filterOn: [],
+      goTo: null,
     };
   },
   mounted() {
@@ -296,8 +303,8 @@ export default {
      * Trigger pagination to update the number of buttons/pages due to filtering
      */
     onFiltered(filteredItems) {
-      this.totalRows = filteredItems.length;
-      this.currentPage = 1;
+      //this.totalRows = filteredItems.length;
+      //this.currentPage = 1;
     },
 
     /**
@@ -320,9 +327,30 @@ export default {
       this.currentPage = 1;
       this.getContracts();
     },
+
+    /**
+     * jumpPage
+     *
+     * go to specified page
+     */
+    jumpPage(value) {
+      this.currentPage = this.goTo;
+      this.getContracts();
+    },
   },
 };
 </script>
 
 <style>
+#go-to-input {
+  max-width: 70px;
+}
+
+#per-page-select {
+  max-width: 70px;
+}
+
+#filter-input {
+  min-width: 100px;
+}
 </style>
