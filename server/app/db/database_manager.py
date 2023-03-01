@@ -1,7 +1,7 @@
 from abc import abstractmethod
 from typing import List, Union
 
-from app.db.models import ContractDB, OID, ContractIn, ContractPatch
+from app.db.models import ContractDB, OID
 
 
 class DatabaseManager(object):
@@ -22,25 +22,17 @@ class DatabaseManager(object):
         pass
 
     @abstractmethod
-    async def get_contracts(self, source_str, title_str, limit, skip) -> List[ContractDB]:
+    async def get_contracts(self, name, language, license, sha, repo, owner, versionsAmount, pragma, size, limit, skip) -> List[ContractDB]:
         pass
 
     @abstractmethod
-    async def count_contracts(self) -> int:
+    async def count_database(self) -> int:
+        pass
+
+    @abstractmethod
+    async def count_contracts(self, name, language, license, sha, repo, owner, versionsAmount, pragma, size) -> int:
         pass
 
     @abstractmethod
     async def get_contract(self, contract_id: OID, version_id: Union[int, None]):
-        pass
-
-    @abstractmethod
-    async def add_contract(self, contract: ContractIn) -> ContractDB:
-        pass
-
-    @abstractmethod
-    async def update_contract(self, contract: ContractPatch, contract_id: OID) -> ContractDB:
-        pass
-
-    @abstractmethod
-    async def delete_contract(contract_id: OID, version_id: Union[int, None]):
         pass

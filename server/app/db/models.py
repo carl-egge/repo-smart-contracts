@@ -1,12 +1,9 @@
-"""
-    I preferred using DB postfix for db models.
-    It will not be confused with response objects - if you will need anything other than a simple CRUD.
-"""
-from email import message
-from email.policy import default
-from lib2to3.pgen2.token import OP
-from optparse import Option
-from typing import Optional, List, Union
+#from email import message
+#from email.policy import default
+#from lib2to3.pgen2.token import OP
+#from optparse import Option
+#from typing import Union
+from typing import Optional, List
 from datetime import datetime
 
 from bson import ObjectId
@@ -38,53 +35,78 @@ class BaseDBModel(BaseModel):
             temp = string.split('_')
             return temp[0] + ''.join(ele.title() for ele in temp[1:])
 
-
-class Content(BaseModel):
-    compilerversion: Optional[str]
-    sourcecode: Optional[str]
-    bytecode: Optional[str]
-    abi: Optional[str]
-
+class Repository(BaseModel):
+    repo_id: int = Field(..., description="The GitHub ID of the source repository")
+    full_name: Optional[str] = Field(description="The full name of the repository")
+    description: Optional[str] = Field(description="The description of the GitHub repository")
+    url: Optional[str] = Field(description="The url to the GitHub API responose for this repository")
+    owner_id: Optional[int] = Field(description="The GitHub ID of the owner of the source repository")
 
 class Version(BaseModel):
-    vid: int = Field(default=1, description="Vesion ID")
+    version_id: int = Field(default=1, description="Vesion ID")
+    sha: Optional[str] = Field(description="GitHub commit sha")
     message: Optional[str] = Field(description="Optional commit message")
+    size: Optional[int] = Field(description="The byte size of the content")
     created: datetime = Field(description="ISOdate of the creation of this version")
-    git_sha: Optional[str] = Field(description="GitHub commit sha")
-    parents: List[int] = Field(description="To represent a tree a version can have multiple parents")
-    content: Content = Field(description="This embedded document holds the code")
-
-
-class ContractIn(BaseModel):
-    title: str = Field(description="Give the smart contract a title")
-    description: Optional[str] = Field(description="Optionally give it a description")
-    source: Optional[str] = Field(default="Manually Uploaded", description="What is the source of this smart contract")
-    source_file_path: Optional[str] = Field(description="What is the file path in the source location?")
-    created: Optional[datetime] = Field(description="When was this smart contract created")
-    git_sha: Optional[str] = Field(description="GitHub commit sha")
-    sourcecode: Optional[str] = Field(description="Enter the source code")
-    bytecode: Optional[str] = Field(description="Optionally enter the byte code")
-    abi: Optional[str] = Field(description="Optionally enter the application binary interface")
-
-
-class ContractPatch(BaseModel):
-    title: Optional[str] = Field(description="Change the title of this smart contract")
-    description: Optional[str] = Field(description="Change the description of this smart contract")
-    message: Optional[str] = Field(description="Give the new version a commit message")
-    created: Optional[datetime] = Field(description="When was the new version created")
-    git_sha: Optional[str] = Field(description="GitHub commit sha")
-    parents: Optional[List[int]] = Field(exclude=True, description="After merging, a new version can have multiple parents")
-    sourcecode: Optional[str] = Field(description="Update the source code")
-    bytecode: Optional[str] = Field(description="Update the byte code")
-    abi: Optional[str] = Field(description="Update the application binary interface")
-
+    compiler_version: Optional[str] = Field(description="The pragma compiler verion of this commit")
+    parents: Optional[str] = Field(description="To represent a tree a version can have multiple parents")
+    content: str = Field(..., description="This field holds the utf-8 encoded source code of this version")
 
 class ContractDB(BaseDBModel):
     id: Optional[OID]
-    title: str = Field(description="The title")
-    description: Optional[str] = Field(description="The description")
-    source: Optional[str] = Field(description="URL or name of the source of the contract.")
-    source_file_path: Optional[str] = Field(description="Path of name of the file in the source repository")
-    latest_version: Optional[int] = Field(default=1, description="Just internal helper to find last version element")
-    versions: List[Version] = Field(description="A list of version elements of the source code")
+    name: str = Field(..., description="The file name of the smart contract")
+    path: str = Field(..., description="The path to this file within the source repository")
+    sha: Optional[str] = Field(description="The git sha for this smart contract file")
+    language: Optional[str] = Field(description="Name of the programming language of this smart contract")
+    license: Optional[str] = Field(description="A short key indicating the license that the source is under")
+    repo: Repository = Field(..., description="Further information on the source repository of this contract")
+    versions: List[Version] = Field(..., description="A list of versions (git commits) of the source code")
 
+    class Config:
+        schema_extra = {
+            "example": {
+                "name": "TestContract",
+                "path": "contracts/TestContract.sol",
+                "sha": "915b5cdc2e295884d583fb148afe63dfaea6be40",
+                "language": "Solidity",
+                "license": "mit",
+                "repo": {
+                    "repo_id": 312330931,
+                    "full_name": "john-doe/test-repo",
+                    "description": "This is an example schema",
+                    "url": "https://api.github.com/repos/john-doe/test-repo",
+                    "owner_id": 764158
+                },
+                "versions": [
+                    {
+                        "version_id": 1,
+                        "sha": "ace505dce9550c98eb0d2bd6992c22c24f1ce88f",
+                        "message": "Created smart contract",
+                        "size": 1232,
+                        "created": "2018-11-07T13:52:12Z",
+                        "compiler_version": "0.4.18",
+                        "content": "pragma solidity ^0.4.18; ...",
+                        "parents": "[cfed62ac04053e33e894fe0eddaf6b1446b3627b]"
+                    }
+                ]
+            }
+        }
+
+class ContractsResponse(BaseDBModel):
+    status: int
+    message: str
+    total_count: int
+    data: List[ContractDB]
+
+
+def ResponseModel(data, message, count):
+    return {
+        "status": 200,
+        "message": message,
+        "total_count": count,
+        "data": data,
+    }
+
+
+def ErrorResponseModel(error, code, message):
+    return {"error": error, "status": code, "message": message}
