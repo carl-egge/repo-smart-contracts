@@ -54,14 +54,15 @@ class MongoManager(DatabaseManager):
             sha: Union[str, None],
             repo: Union[str, None],
             owner: Union[str, None],
-            versionsAmount: Union[int, None],
+            amountOfVersions: Union[int, None],
             pragma: Union[str, None],
             size: Union[str, None],
+            searchAllVersions: bool,
             limit: int,
             skip: int) -> List[ContractDB]:
         contracts_q = []
         # Create and run query
-        query = self.construct_query_obj(name, language, license, sha, repo, owner, versionsAmount, pragma, size)
+        query = self.construct_query_obj(name, language, license, sha, repo, owner, amountOfVersions, pragma, size, searchAllVersions)
         if query == 0:
             return []
         else:
@@ -99,10 +100,11 @@ class MongoManager(DatabaseManager):
             sha: Union[str, None],
             repo: Union[str, None],
             owner: Union[str, None],
-            versionsAmount: Union[int, None],
+            amountOfVersions: Union[int, None],
             pragma: Union[str, None],
-            size: Union[str, None]) -> int:
-        query = self.construct_query_obj(name, language, license, sha, repo, owner, versionsAmount, pragma, size)
+            size: Union[str, None],
+            searchAllVersions: bool) -> int:
+        query = self.construct_query_obj(name, language, license, sha, repo, owner, amountOfVersions, pragma, size, searchAllVersions)
         if query:
             return await self.db.contracts.count_documents(query)
         return await self.db.contracts.estimated_document_count()
@@ -120,9 +122,10 @@ class MongoManager(DatabaseManager):
             sha: Union[str, None],
             repo: Union[str, None],
             owner: Union[str, None],
-            versionsAmount: Union[int, None],
+            amountOfVersions: Union[int, None],
             pragma: Union[str, None],
             size: Union[str, None],
+            searchAllVersions: bool = False
     ):
         # Collect filters from query parameters
         filters = []
@@ -152,23 +155,45 @@ class MongoManager(DatabaseManager):
                 filters.append({ 'repo.owner_id': int(owner) })
             else:
                 filters.append({'repo.full_name': {'$regex': f'.*{owner}.*'}})
-        if versionsAmount:
-            filters.append({"versions": {"$size": versionsAmount}})
+        if amountOfVersions:
+            filters.append({"versions": {"$size": amountOfVersions}})
         if pragma:
             # using regex to precheck if pragma is in the valid format of 0.0.0
             check_pragma = re.search(r'^(\d*)\.(\d*)\.(\d*)$', pragma)
-            if check_pragma:
+            if check_pragma and searchAllVersions:
                 filters.append({'versions.compiler_version': {'$regex': f'.*{pragma}.*'}})
+            elif check_pragma:
+                # using arrayElemAt to get the last element of the array
+                filters.append({
+                    "$expr": {
+                        "$regexMatch": {
+                            'input': { "$arrayElemAt": [ "$versions.compiler_version", -1 ] },
+                            'regex': f'.*{pragma}.*'
+                        }
+                    }
+                })
             else:
                 return 0
         if size:
             # using regex to check if size is a digit, range of digits or non valid
             check_range = re.search(r'^(.*)\.[\.+](.*)$', size)
             if size.isdigit():
-                filters.append({'versions.size': int(size)})
+                if searchAllVersions:
+                    filters.append({'versions.size': int(size)})
+                else:
+                    filters.append({ "$expr": { "$eq": [{ "$arrayElemAt": [ "$versions.size", -1 ] }, int(size)] }})
             elif check_range and check_range.group(1).isdigit() and check_range.group(2).isdigit() and check_range.group(1) < check_range.group(2):
-                filters.append({'versions.size': { '$gte': int(check_range.group(1))}})
-                filters.append({'versions.size': { '$lte': int(check_range.group(2))}})
+                if searchAllVersions:
+                    # The first approach will filter the entire array at the same time and therefore have wrong results
+                    # filters.append({'versions.size': { '$gte': int(check_range.group(1)), '$lte': int(check_range.group(2))}})
+                    # This approach will exclude all contracts that have a size that is out of range
+                    filters.append({'versions': {'$not': {'$elemMatch': {'$or': [
+                        {'size': {'$lt': int(check_range.group(1))}},
+                        {'size': {'$gt': int(check_range.group(2))}}
+                    ]}}}})
+                else:
+                    filters.append({ "$expr": { "$gte": [{ "$arrayElemAt": [ "$versions.size", -1 ] }, int(check_range.group(1))]} })
+                    filters.append({ "$expr": { "$lte": [{ "$arrayElemAt": [ "$versions.size", -1 ] }, int(check_range.group(2))]} })
             else:
                 return 0
         # Check if filter exist

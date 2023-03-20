@@ -22,7 +22,7 @@ class DatabaseManager(object):
         pass
 
     @abstractmethod
-    async def get_contracts(self, name, language, license, sha, repo, owner, versionsAmount, pragma, size, limit, skip) -> List[ContractDB]:
+    async def get_contracts(self, name, language, license, sha, repo, owner, amountOfVersions, pragma, size, searchAllVersions, limit, skip) -> List[ContractDB]:
         pass
 
     @abstractmethod
@@ -30,7 +30,7 @@ class DatabaseManager(object):
         pass
 
     @abstractmethod
-    async def count_contracts(self, name, language, license, sha, repo, owner, versionsAmount, pragma, size) -> int:
+    async def count_contracts(self, name, language, license, sha, repo, owner, amountOfVersions, pragma, size, searchAllVersions) -> int:
         pass
 
     @abstractmethod

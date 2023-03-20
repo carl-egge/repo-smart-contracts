@@ -32,18 +32,19 @@ async def all_contracts(
                         sha: str = Query(None, title="Git sha", description="Git sha for this contract or one of its versions."),
                         repo: str = Query(None, title="Source Repository", description="Show contracts from a specified source repository."),
                         owner: str = Query(None, title="Repository Owner", description="Filter for ID or name of repository owner."),
-                        versionsAmount: int = Query(None, ge=1, title="Amount of Versions", description="Only contracts that have this amount of versions."),
+                        amountOfVersions: int = Query(None, ge=1, title="Amount of Versions", description="Only contracts that have this amount of versions."),
                         pragma: str = Query(None, title="Compiler Version", description="Filter for Solidity files that were compiled with this pragma version (format: 0.0.0)."),
                         size: str = Query(None, title="File size", description="Only contracts with this file size (Can be range in the format: 10..20)."),
+                        searchAllVersions: bool = Query(False, title="Search in all versions", description="Search in all versions of a contract (default searches only in latest version)."),
                         limit: int = Query(default=50, ge=1, le=200, title="Limit for Objects", description="Paginate the amount of returned objects (limit)."),
                         skip: int = Query(default=0, ge=0, title="Offset for Objects", description="Paginate the amount of returned objects (offset)."),
                         db: DatabaseManager = Depends(get_database)
                     ):
     db_size = await db.count_database()
     response.headers["X-Total-DB-Size"] = str(db_size)
-    contracts = await db.get_contracts(name, language, license, sha, repo, owner, versionsAmount, pragma, size, limit, skip)
+    contracts = await db.get_contracts(name, language, license, sha, repo, owner, amountOfVersions, pragma, size, searchAllVersions, limit, skip)
     if contracts:
-        result_size = await db.count_contracts(name, language, license, sha, repo, owner, versionsAmount, pragma, size)
+        result_size = await db.count_contracts(name, language, license, sha, repo, owner, amountOfVersions, pragma, size, searchAllVersions)
         return ResponseModel(contracts, "Smart contracts retrieved successfully", result_size)
     return ResponseModel(contracts, "No smart contracts found", 0)
 
