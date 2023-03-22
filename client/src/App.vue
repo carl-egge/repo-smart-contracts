@@ -7,7 +7,6 @@
           <img src="./assets/logo.png" class="mw-65 logo" />
         </b-navbar-brand>
         <b-nav-item to="/">Smart Contracts List</b-nav-item>
-        <b-nav-item to="/add">Add Smart Contract</b-nav-item>
       </b-navbar-nav>
       <b-navbar-nav class="ml-auto">
         <b-nav-item
