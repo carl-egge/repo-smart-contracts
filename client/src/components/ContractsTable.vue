@@ -1,19 +1,7 @@
 <template>
   <div>
-    <h2>All Smart Contracts</h2>
     <b-container fluid>
-      <!-- Add New Button -->
       <b-row class="mb-3" align-v="center">
-        <b-col cols="auto">
-          <b-button
-            @click="$router.push('/add')"
-            variant="warning"
-            class="mb-3"
-          >
-            Create Contract
-          </b-button>
-        </b-col>
-
         <!-- Filter -->
         <b-col>
           <b-form-group label-for="filter-input">
@@ -29,41 +17,6 @@
                 <b-button :disabled="!filter" @click="filter = ''">
                   Clear
                 </b-button>
-              </b-input-group-append>
-            </b-input-group>
-          </b-form-group>
-        </b-col>
-
-        <!-- Pagination: Set entries per page -->
-        <b-col cols="auto">
-          <b-form-group label-for="per-page-select">
-            <b-input-group size="sm">
-              <b-form-select
-                id="per-page-select"
-                v-model="perPage"
-                :options="pageOptions"
-                @change="handlePageSizeChange($event)"
-              ></b-form-select>
-
-              <b-input-group-append>
-                <b-button :disabled="true"> Per Page </b-button>
-              </b-input-group-append>
-            </b-input-group>
-          </b-form-group>
-        </b-col>
-
-        <!-- Go to page -->
-        <b-col cols="auto">
-          <b-form-group label-for="go-to-input">
-            <b-input-group size="sm">
-              <b-form-input
-                id="go-to-input"
-                v-model="goTo"
-                type="number"
-              ></b-form-input>
-
-              <b-input-group-append>
-                <b-button @click="jumpPage($event)"> Go to page </b-button>
               </b-input-group-append>
             </b-input-group>
           </b-form-group>
@@ -87,8 +40,9 @@
         @filtered="onFiltered"
       >
         <!-- Row: Title (format bold) -->
-        <template #cell(title)="data">
+        <template #cell(name)="data">
           <b>{{ data.value }}</b>
+          <span class="path-sm">({{ data.item.path }})</span>
         </template>
 
         <!-- Row: Versions Quantity -->
@@ -102,10 +56,20 @@
         </template>
 
         <!-- Row: ID -->
-        <template #cell(id)="data">
+        <!-- <template #cell(id)="data">
           <router-link :to="'/contracts/' + data.value">
             {{ data.value }}
           </router-link>
+        </template> -->
+
+        <!-- Row: Repo -->
+        <template #cell(repo.full_name)="data">
+          <a :href="'https://github.com/' + data.value" target="_blank">
+            {{ data.value }}
+          </a> 
+          <span class="icon-sm">
+            <b-icon-box-arrow-up-right></b-icon-box-arrow-up-right>
+          </span>
         </template>
 
         <!-- Row: Actions (Buttons) -->
@@ -113,19 +77,11 @@
           <!-- Update Button @click="$router.push('/contracts/' +row.item.id)"-->
           <b-button
             @click="$router.push('/contracts/' + row.item.id)"
+            v-b-tooltip.hover :title="'ID: ' + row.item.id"
             variant="primary"
-            class="mx-1 mb-xl-0 mb-1"
+            size="sm"
           >
-            <b-icon-pencil></b-icon-pencil>
-          </b-button>
-
-          <!-- Delete Button -->
-          <b-button
-            @click="destroyContract(row.item)"
-            variant="danger"
-            class="mx-1 mb-xl-0 mb-1"
-          >
-            <b-icon-trash></b-icon-trash>
+            <b-icon-three-dots></b-icon-three-dots>
           </b-button>
         </template>
 
@@ -138,9 +94,29 @@
         </template>
       </b-table>
 
-      <!-- Pagination: Switch between pages. -->
-      <b-row align-h="center">
-        <b-col class="my-1 mb-5" md="5">
+      <!-- Pagination -->
+      <b-row align-h="center" class="my-1 mb-5">
+        
+        <!-- Pagination: Set entries per page -->
+        <b-col cols="auto">
+            <b-form-group label-for="per-page-select">
+              <b-input-group size="sm">
+                <b-form-select
+                  id="per-page-select"
+                  v-model="perPage"
+                  :options="pageOptions"
+                  @change="handlePageSizeChange($event)"
+                ></b-form-select>
+  
+                <b-input-group-append>
+                  <b-button :disabled="true"> Per Page </b-button>
+                </b-input-group-append>
+              </b-input-group>
+            </b-form-group>
+        </b-col>
+
+        <!-- Pagination: Switch between pages. -->
+        <b-col md="5" class="mb-3">
           <b-pagination
             v-model="currentPage"
             :total-rows="totalRows"
@@ -151,8 +127,26 @@
             @change="handlePageChange($event)"
           ></b-pagination>
         </b-col>
-      </b-row>
-    </b-container>
+        
+        <!-- Go to page -->
+        <b-col cols="auto">
+          <b-form-group label-for="go-to-input">
+            <b-input-group size="sm">
+              <b-form-input
+              id="go-to-input"
+                v-model="goTo"
+                type="number"
+              ></b-form-input>
+              
+              <b-input-group-append>
+                <b-button @click="jumpPage($event)"> Go to page </b-button>
+              </b-input-group-append>
+            </b-input-group>
+          </b-form-group>
+        </b-col>
+
+    </b-row>
+  </b-container>
   </div>
 </template>
 
@@ -166,25 +160,35 @@ export default {
 
       fields: [
         {
-          key: "title",
-          label: "Contract name",
+          key: "name",
+          label: "Contract",
           sortable: true,
           sortDirection: "desc",
         },
+        // {
+        //   key: "id",
+        //   label: "ID",
+        //   sortable: true,
+        //   class: "text-center",
+        // },
         {
-          key: "id",
-          label: "ID",
+          key: "repo.full_name",
+          label: "Repository",
           sortable: true,
-          class: "text-center",
         },
         {
-          key: "source",
-          label: "Source",
+          key: "language",
+          label: "Language",
+          sortable: true,
+        },
+        {
+          key: "license",
+          label: "License",
           sortable: true,
         },
         {
           key: "versions",
-          label: "Quantity versions",
+          label: "Quantity Of Versions",
           sortable: true,
           class: "text-center",
         },
@@ -194,7 +198,11 @@ export default {
           sortable: true,
           class: "text-center",
         },
-        { key: "actions", label: "Actions", class: "text-center" },
+        {
+          key: "actions",
+          label: "Details",
+          class: "text-center py-0 align-middle",
+        },
       ],
 
       // Table Settings
@@ -202,8 +210,8 @@ export default {
       totalRows: 1,
       totalDBsize: 0,
       currentPage: 1,
-      perPage: 5,
-      pageOptions: [5, 10, 25, 100],
+      perPage: 25,
+      pageOptions: [5, 25, 100, 200],
       sortBy: "",
       sortDesc: true,
       sortDirection: "desc",
@@ -226,10 +234,14 @@ export default {
       const params = this.getRequestParams(this.currentPage, this.perPage);
       const response = await ContractsService.getAll(params);
       this.totalRows = parseInt(response.headers["x-total-db-size"]);
-      this.contracts = response.data;
+      this.contracts = response.data.data;
       this.contracts.forEach((element) => {
-        element.compilerversion =
-          element.versions[element.latestVersion - 1].content.compilerversion;
+        if (element.versions.length > 0) {
+          element.compilerversion =
+            element.versions.slice(-1)[0].compiler_version;
+        } else {
+          element.compilerversion = "N/A";
+        }
       });
       this.isBusy = false;
     },
@@ -352,5 +364,37 @@ export default {
 
 #filter-input {
   min-width: 100px;
+}
+
+.btn-sm {
+  padding: 0.2rem 0.35rem;
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.page-link {
+  color: black;
+}
+
+.page-item.active .page-link {
+  z-index: 3;
+  color: #fff;
+  background-color: #6c757d;
+  border-color: #6c757d;
+}
+
+.pagination a {
+  color:chocolate;
+}
+
+.icon-sm {
+  font-size: 0.65rem;
+  vertical-align: 0.45em;
+}
+
+.path-sm {
+  font-size: 0.8rem;
+  color: grey;
+  vertical-align: 0.3em;
 }
 </style>
