@@ -6,7 +6,9 @@
         <b-navbar-brand href="/" class="py-0">
           <img src="./assets/logo_v2.png" class="mw-95 logo ml-2" />
         </b-navbar-brand>
-        <!-- <b-nav-item to="/">Smart Contracts List</b-nav-item> -->
+        <b-nav-item to="/">Smart Contracts</b-nav-item>
+        <!-- <b-nav-item to="/archive">Download Archive</b-nav-item> -->
+        <b-nav-item to="/about">About</b-nav-item>
       </b-navbar-nav>
       <b-navbar-nav class="ml-auto">
         <b-nav-item

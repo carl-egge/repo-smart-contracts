@@ -1,10 +1,13 @@
 <template>
   <div>
-    <b-container class="px-0 mb-2" fluid>
-      <b-row align-h="start" align-v="center">
-        <b-col cols="auto" style="font-size: 1.85rem">
-          <strong>{{ this.title }}</strong>
+    <!-- Title section -->
+    <b-container fluid>
+      <b-row>
+        <b-col>
+          <h4 class="font-weight-bold">{{ this.contract.name }}</h4>
         </b-col>
+      </b-row>
+      <b-row>
         <b-col class="text-secondary">
           ({{ this.contract.id }})
           <b-button
@@ -16,326 +19,138 @@
           </b-button>
         </b-col>
       </b-row>
-      <b-row align-h="start" align-v="center">
+    </b-container>
+    <br />
+    <!-- General Contract Information -->
+    <b-container class="code-section" fluid>
+      <b-row>
+        <b-col class="font-weight-bold" md="2" lg="1"> Sha: </b-col>
+        <b-col> {{ this.contract.sha }} </b-col>
+      </b-row>
+      <b-row>
+        <b-col class="font-weight-bold" md="2" lg="1"> Path: </b-col>
+        <b-col> {{ this.contract.path }} </b-col>
+      </b-row>
+      <b-row>
+        <b-col class="font-weight-bold" md="2" lg="1"> Language: </b-col>
+        <b-col> {{ this.contract.language }} </b-col>
+      </b-row>
+      <b-row>
+        <b-col class="font-weight-bold" md="2" lg="1"> License: </b-col>
+        <b-col> {{ this.contract.license }} </b-col>
+      </b-row>
+    </b-container>
+    <br />
+    <!-- Repository Information -->
+    <h6 class="font-italic">Repository:</h6>
+    <b-container class="code-section" fluid>
+      <b-row>
+        <b-col> 
+          <a :href="'https://github.com/' + this.contract.repo.full_name" target="_blank">
+            <strong>{{ this.contract.repo.full_name }}</strong>
+          </a>
+          <span class="text-secondary">({{ this.contract.repo.repo_id }})</span>
+        </b-col>
+      </b-row>
+      <b-row>
+        <b-col class="font-weight-bold" md="2" lg="1"> Description: </b-col>
+        <b-col> {{ this.contract.repo.description }} </b-col>
+      </b-row>
+      <b-row>
+        <b-col class="font-weight-bold" md="2" lg="1"> url: </b-col>
+        <b-col>
+          <a :href="this.contract.repo.url" target="_blank">{{ this.contract.repo.url }}</a>
+        </b-col>
+      </b-row>
+      <b-row>
+        <b-col class="font-weight-bold" md="2" lg="1"> Owner: </b-col>
+        <b-col> {{ owner }} </b-col>
+      </b-row>
+    </b-container>
+    <br />
+    <!-- Versions Information -->
+    <h6 class="font-italic">Versions:</h6>
+    <b-container class="code-section" v-if="this.contract.versions.length > 0" fluid>
+      <b-row v-if="show_version_dropdown">
         <b-col cols="auto">
           <b-dropdown
             id="choose-Version"
             variant="outline-secondary"
-            class="m-md-2"
+            class="m-2"
             size="sm"
           >
-            <template #button-content> Version: {{ version }} </template>
+            <template #button-content> Version: {{ current_version + 1 }} </template>
             <b-dropdown-item
               v-for="vers in contract.versions"
-              :key="vers.vid"
-              @click="changeVersion(vers.vid)"
+              :key="vers.version_id"
+              @click="changeVersion(vers.version_id)"
             >
-              Version: {{ vers.vid }}
+              Version: {{ vers.version_id }}
             </b-dropdown-item>
           </b-dropdown>
         </b-col>
-        <b-col cols="auto">
-          <b-button
-            type="button"
-            variant="outline-secondary"
-            size="sm"
-            @click="deleteContractVersion()"
-          >
-            Delete Version {{ version }}
-          </b-button>
-        </b-col>
       </b-row>
-      <b-row align-h="start" align-v="center" class="ml-2">
-        <b-col> <b>Version Timestamp:</b> {{ this.timestamp }} (UTC) </b-col>
-        <b-col> <b>Parent Versions:</b> [{{ this.parents }}] </b-col>
-      </b-row>
-      <b-row align-h="start" align-v="center" class="ml-2">
-        <b-col> <b>Commit Message:</b> {{ this.commitmsg }} </b-col>
-        <b-col> <b>Git Sha:</b> {{ this.git_sha }} </b-col>
-      </b-row>
-    </b-container>
-
-    <b-container class="code-section p-2" fluid>
-      <!-- Title -->
-      <b-row align-v="center" class="mb-2">
-        <b-col
-          ><label for="inline-form-input-title">
-            <strong>Title:</strong>
-          </label></b-col
-        >
-        <b-col cols="8">
-          <b-form-input
-            type="text"
-            id="inline-form-input-title"
-            class="mb-2 mr-sm-2 mb-sm-0"
-            placeholder="..."
-            v-model="title"
-            :disabled="disabletitle"
-          ></b-form-input>
-        </b-col>
-        <b-col>
-          <b-button
-            variant="outline-secondary"
-            class="icon-button"
-            @click="copyToClipBoard(contract.title)"
-          >
-            <b-icon icon="clipboard"></b-icon>
-          </b-button>
-          <b-button
-            variant="outline-secondary"
-            class="icon-button"
-            @click="edit('title')"
-          >
-            <b-icon icon="pen"></b-icon>
-          </b-button>
-        </b-col>
-      </b-row>
-      <!-- Description -->
-      <b-row align-v="center" class="mb-2">
-        <b-col
-          ><label for="inline-form-input-desc">
-            <strong>Description:</strong>
-          </label></b-col
-        >
-        <b-col cols="8">
-          <b-form-input
-            type="text"
-            id="inline-form-input-desc"
-            class="mb-2 mr-sm-2 mb-sm-0"
-            placeholder="..."
-            v-model="description"
-            :disabled="disabledesc"
-          ></b-form-input>
-        </b-col>
-        <b-col>
-          <b-button
-            variant="outline-secondary"
-            class="icon-button"
-            @click="copyToClipBoard(contract.description)"
-          >
-            <b-icon icon="clipboard"></b-icon>
-          </b-button>
-          <b-button
-            variant="outline-secondary"
-            class="icon-button"
-            @click="edit('desc')"
-          >
-            <b-icon icon="pen"></b-icon>
-          </b-button>
-        </b-col>
-      </b-row>
-      <!-- Source -->
-      <b-row align-v="center" class="mb-2">
-        <b-col
-          ><label for="inline-form-input-src">
-            <strong>Source:</strong>
-          </label></b-col
-        >
-        <b-col cols="8">
-          <b-form-input
-            type="text"
-            id="inline-form-input-src"
-            class="mb-2 mr-sm-2 mb-sm-0"
-            placeholder="..."
-            v-model="source"
-            :disabled="true"
-          ></b-form-input>
-        </b-col>
-        <b-col>
-          <b-button
-            variant="outline-secondary"
-            class="icon-button"
-            @click="copyToClipBoard(contract.source)"
-          >
-            <b-icon icon="clipboard"></b-icon>
-          </b-button>
-        </b-col>
-      </b-row>
-      <!-- Source file path -->
-      <b-row align-v="center" class="mb-4">
-        <b-col
-          ><label for="inline-form-input-path">
-            <strong>Source file path:</strong>
-          </label></b-col
-        >
-        <b-col cols="8">
-          <b-form-input
-            type="text"
-            id="inline-form-input-path"
-            class="mb-2 mr-sm-2 mb-sm-0"
-            placeholder="..."
-            v-model="source_file_path"
-            :disabled="true"
-          ></b-form-input>
-        </b-col>
-        <b-col>
-          <b-button
-            variant="outline-secondary"
-            class="icon-button"
-            @click="copyToClipBoard(contract.source_file_path)"
-          >
-            <b-icon icon="clipboard"></b-icon>
-          </b-button>
-        </b-col>
-      </b-row>
-    </b-container>
-    <b-container class="mt-2 code-section p-2" fluid>
-      <!-- Source Code -->
-      <b-row align-v="center" class="m-2">
-        <strong>Sourcecode: </strong>
+      <b-row v-else>
         <b-button
           variant="outline-secondary"
-          class="icon-button ml-2"
-          @click="copyToClipBoard(sourcecode)"
+          size="sm"
+          class="m-2"
+          disabled
         >
-          <b-icon icon="clipboard"></b-icon>
+          Version: 1
         </b-button>
-        <prism-editor
-          class="my-editor height-300"
-          v-model="sourcecode"
-          :highlight="highlighter"
-          line-numbers
-          placeholder="start typing here ..."
-        >
-        </prism-editor>
+        <span class="font-weight-lighter m-2" style="font-size: 0.9em;">(only one version available)</span>
       </b-row>
-      <!-- Byte Code -->
-      <b-row align-v="center" class="m-2">
-        <strong>Bytecode: </strong>
-        <b-button
-          variant="outline-secondary"
-          class="icon-button ml-2"
-          @click="copyToClipBoard(bytecode)"
-        >
-          <b-icon icon="clipboard"></b-icon>
-        </b-button>
-        <prism-editor
-          class="my-editor height-300"
-          v-model="bytecode"
-          :highlight="highlighter"
-          line-numbers
-          placeholder="start typing here ..."
-        >
-        </prism-editor>
+      <b-row>
+        <b-col class="font-weight-bold" md="2" lg="1"> Sha: </b-col>
+        <b-col> {{ this.contract.versions[current_version].sha }} </b-col>
       </b-row>
-      <!-- ABI -->
-      <b-row align-v="center" class="m-2">
-        <strong>ABI: </strong>
-        <b-button
-          variant="outline-secondary"
-          class="icon-button ml-2"
-          @click="copyToClipBoard(abi)"
-        >
-          <b-icon icon="clipboard"></b-icon>
-        </b-button>
-        <prism-editor
-          class="my-editor height-300"
-          v-model="abi"
-          :highlight="highlighter"
-          line-numbers
-          placeholder="start typing here ..."
-        >
-        </prism-editor>
+      <b-row>
+        <b-col class="font-weight-bold" md="2" lg="1"> Message: </b-col>
+        <b-col> {{ this.contract.versions[current_version].message }} </b-col>
+      </b-row>
+      <b-row>
+        <b-col class="font-weight-bold" md="2" lg="1"> Size: </b-col>
+        <b-col> {{ this.contract.versions[current_version].size }} </b-col>
+      </b-row>
+      <b-row>
+        <b-col class="font-weight-bold" md="2" lg="1"> Created: </b-col>
+        <b-col> {{ this.contract.versions[current_version].created | formatDate }} (UTC)</b-col>
+      </b-row>
+      <b-row>
+        <b-col class="font-weight-bold" md="2" lg="1"> Compiler: </b-col>
+        <b-col> {{ this.contract.versions[current_version].compiler_version }} </b-col>
+      </b-row>
+      <b-row v-if="show_version_dropdown">
+        <b-col class="font-weight-bold" md="2" lg="1"> Parents: </b-col>
+        <b-col> {{ this.contract.versions[current_version].parents }} </b-col>
+      </b-row>
+      <b-row>
+        <b-col class="font-weight-bold" md="2" lg="1"> Sourcecode: </b-col>
+        <b-col>
+          <b-button
+            variant="outline-secondary"
+            class="icon-button ml-2"
+            @click="copyToClipBoard(contract.versions[current_version].content)"
+          >
+            <b-icon icon="clipboard"></b-icon>
+          </b-button>
+        </b-col>
       </b-row>
       <b-row>
         <b-col>
-          <b-button
-            type="button"
-            variant="outline-danger"
-            block
-            @click="deleteContract()"
+          <prism-editor
+            class="my-editor height-500"
+            v-model="this.contract.versions[current_version].content"
+            :highlight="highlighter"
+            line-numbers
+            placeholder="no source code here ..."
           >
-            Delete this Contract
-          </b-button>
-        </b-col>
-        <b-col>
-          <b-button
-            type="submit"
-            variant="outline-success"
-            block
-            @click="$bvModal.show('bv-modal')"
-          >
-            Save Changes
-          </b-button>
+          </prism-editor>
         </b-col>
       </b-row>
     </b-container>
-
-    <!-- Save Modal -->
-    <b-modal id="bv-modal" hide-footer size="lg">
-      <template #modal-title> Save Smart Contract </template>
-      <div class="d-block">
-        <b-form-group
-          id="modal-input-group-1"
-          label="Update Message: (recommended)"
-          label-for="modal-input-1"
-        >
-          <b-form-input
-            id="modal-input-1"
-            v-model="new_commitmsg"
-            placeholder="start typing ..."
-          ></b-form-input>
-        </b-form-group>
-        <b-form-group
-          id="modal-input-group-2"
-          label="Git Sha: (optional)"
-          label-for="modal-input-2"
-        >
-          <b-form-input
-            id="modal-input-2"
-            v-model="new_git_sha"
-            placeholder="optional ..."
-          ></b-form-input>
-        </b-form-group>
-        <b-form-checkbox
-          v-model="show_new_parents"
-          name="switch-button-abi"
-          switch
-        >
-          Configure Parents
-        </b-form-checkbox>
-        <b-form-group
-          v-if="show_new_parents"
-          id="modal-input-group-3"
-          label="Parents: (optional)"
-          label-for="modal-input-3"
-        >
-          <b-form-select
-            v-model="new_parent1"
-            :options="contract.versions"
-            text-field="vid"
-            value-field="vid"
-            size="sm"
-            class="col-1"
-          >
-            <template #first>
-              <b-form-select-option :value="null">null</b-form-select-option>
-            </template>
-          </b-form-select>
-          <b-form-select
-            v-model="new_parent2"
-            :options="contract.versions"
-            text-field="vid"
-            value-field="vid"
-            size="sm"
-            class="col-1"
-          >
-            <template #first>
-              <b-form-select-option :value="null">null</b-form-select-option>
-            </template>
-          </b-form-select>
-        </b-form-group>
-      </div>
-      <b-button
-        class="mt-3"
-        variant="outline-success"
-        type="submit"
-        block
-        @click="saveContract()"
-      >
-        Save
-      </b-button>
-    </b-modal>
+    <p v-else>Sorry, no Versions here!</p>
   </div>
 </template>
 
@@ -358,32 +173,68 @@ export default {
   },
   data() {
     return {
-      contract: {},
-      version: 1,
-      timestamp: "loading ...",
-      parents: "loading ...",
-      commitmsg: "",
-      git_sha: "",
-      sourcecode: "loading ...",
-      bytecode: "loading ...",
-      abi: "loading ...",
-      title: "loading ...",
-      description: "loading ...",
-      source: "loading ...",
-      source_file_path: "loading ...",
-      disabledesc: true,
-      disabletitle: true,
-      new_commitmsg: "",
-      new_parent1: null,
-      new_parent2: null,
-      new_git_sha: "",
-      show_new_parents: false,
+      contract: {
+        repo: {
+          repo_id: "loading ...",
+          full_name: "loading ...",
+          owner_id: "loading ...",
+          description: "loading ...",
+          url: "loading ...",
+        },
+        versions: [],
+      },
+      current_version: 0,
+      show_version_dropdown: true,
     };
   },
-  mounted() {
+  created() {
     this.getContract(this.$route.params.id);
   },
+  computed: {
+    /**
+     * Get the Owner of the repository
+     */
+    owner() {
+      if (this.contract == {}) {
+        return "loading ...";
+      }
+      if(this.contract.repo.full_name.indexOf("/") > -1) {
+        return this.contract.repo.full_name.split("/")[0] + " (" + this.contract.repo.owner_id + ")";
+      } else {
+        return this.contract.repo.owner_id;
+      }
+    },
+  },
   methods: {
+    /**
+     * GET contract from server
+     */
+    async getContract(iden) {
+      const response = await ContractsService.get(iden);
+      if (response.data.status == 404) {
+        this.$parent.makeToast(
+          "Error",
+          `The contract ID is unknown.`,
+          "danger"
+        );
+        this.$router.push("/");
+      } else {
+        this.contract = response.data.data;
+        if (this.contract.versions.length < 1) {
+          this.$parent.makeToast(
+            "Error",
+            `No versions found for this contract.`,
+            "danger"
+          );
+        } if (this.contract.versions.length == 1) {
+          this.show_version_dropdown = false;
+          this.current_version = 0;
+        } else {
+          this.current_version = this.contract.versions.length - 1;
+        }
+      }
+    },
+
     /**
      * Set highlighting on prism editors
      */
@@ -392,171 +243,11 @@ export default {
     },
 
     /**
-     * Update the variables on the page
-     */
-    setCode(vid) {
-      this.title = this.contract.title;
-      this.description = this.contract.description;
-      this.source = this.contract.source;
-      this.source_file_path = this.contract.source_file_path;
-      this.sourcecode = this.contract.versions[vid - 1].content.sourcecode
-        ? this.contract.versions[vid - 1].content.sourcecode
-        : "";
-      this.bytecode = this.contract.versions[vid - 1].content.bytecode
-        ? this.contract.versions[vid - 1].content.bytecode
-        : "";
-      this.abi = this.contract.versions[vid - 1].content.abi
-        ? this.contract.versions[vid - 1].content.abi
-        : "";
-      this.parents = this.contract.versions[vid - 1].parents.toString();
-      this.commitmsg = this.contract.versions[vid - 1].message;
-      this.git_sha = this.contract.versions[vid - 1].git_sha;
-      this.findTimestamp(this.version);
-    },
-
-    /**
      * Dropdown change version of contract
      */
     changeVersion(vid) {
-      this.version = vid;
-      this.setCode(vid);
-    },
-
-    /**
-     * Format the timestamp of the version
-     */
-    findTimestamp(vid) {
-      var tmp = new Date(this.contract.versions[vid - 1].created);
-      this.timestamp = tmp.toLocaleDateString("de-DE", {
-        hour: "numeric",
-        minute: "numeric",
-      });
-    },
-
-    /**
-     * Buttons to activate textfields of text or description
-     */
-    edit(prop) {
-      if (prop == "desc") {
-        const temp = this.disabledesc;
-        this.disabledesc = !temp;
-      }
-      if (prop == "title") {
-        const temp = this.disabletitle;
-        this.disabletitle = !temp;
-      } else {
-        return;
-      }
-    },
-
-    /**
-     * Check if string is empty or has value
-     */
-    hasValue(val) {
-      if (!(!val || val.length == 0 || val == "null")) return true;
-      else false;
-    },
-
-    /**
-     * GET contract from server
-     */
-    async getContract(iden) {
-      const response = await ContractsService.get(iden);
-      this.contract = response.data;
-      if (!this.contract) {
-        this.$parent.makeToast(
-          "Error",
-          `The contract ID is unknown.`,
-          "danger"
-        );
-        this.$router.push("/");
-      }
-      this.version = this.contract.latestVersion;
-      this.setCode(this.version);
-    },
-
-    /**
-     * PUT to update contract in database
-     */
-    async saveContract() {
-      this.$bvModal.hide("bv-modal");
-      const data = {
-        title: this.title,
-      };
-      if (this.hasValue(this.new_commitmsg)) data.message = this.new_commitmsg;
-      if (this.hasValue(this.new_git_sha)) data.git_sha = this.new_git_sha;
-      if (this.hasValue(this.description)) data.description = this.description;
-      if (this.hasValue(this.sourcecode)) data.sourcecode = this.sourcecode;
-      if (this.hasValue(this.bytecode)) data.bytecode = this.bytecode;
-      if (this.hasValue(this.abi)) data.abi = this.abi;
-      let parents = [];
-      if (this.new_parent1) parents.push(this.new_parent1);
-      if (this.new_parent2) parents.push(this.new_parent2);
-      if (parents.length != 0) data.parents = parents;
-      const response = await ContractsService.update(this.contract.id, data);
-      if (response.status == "200") {
-        this.$parent.makeToast(
-          "200 :: Success",
-          `The contract ${response.data.id} was saved.`,
-          "success"
-        );
-      } else {
-        this.$parent.makeToast(
-          "422 :: Error",
-          "Something went wrong.",
-          "danger"
-        );
-      }
-      this.getContract(this.$route.params.id);
-    },
-
-    /**
-     * DELETE a contract from database
-     */
-    async deleteContract() {
-      const response = await ContractsService.delete(this.contract.id);
-      if (response.status == "204") {
-        this.$parent.makeToast(
-          "204 :: Success",
-          "The contract was deleted.",
-          "success"
-        );
-        this.$router.push("/");
-      } else {
-        this.$parent.makeToast(
-          "422 :: Error",
-          "Something went wrong.",
-          "danger"
-        );
-        this.getContract(this.contract.id);
-      }
-    },
-
-    /**
-     * DELETE a single version of the contract from the database
-     */
-    async deleteContractVersion() {
-      if (this.contract.versions.length == 1) return this.deleteContract();
-      const temp_version = this.version;
-      const response = await ContractsService.deleteVers(
-        this.contract.id,
-        this.version
-      );
-      if (response.status == "204") {
-        this.$parent.makeToast(
-          "204 :: Success",
-          `Version ${temp_version} of contract ${this.contract.id} was deleted.`,
-          "success"
-        );
-        this.getContract(this.contract.id);
-      } else {
-        this.$parent.makeToast(
-          "422 :: Error",
-          "Something went wrong.",
-          "danger"
-        );
-        this.getContract(this.contract.id);
-      }
+      this.current_version = vid - 1;
+      this.$forceUpdate();
     },
 
     /**
@@ -564,6 +255,24 @@ export default {
      */
     async copyToClipBoard(textToCopy) {
       await navigator.clipboard.writeText(textToCopy);
+    },
+  },
+  filters: {
+    /**
+     * Filter to format the timestamp
+     */
+    formatDate: function (value) {
+      if (!value) return "";
+      var tmp = new Date(value);
+      return tmp.toLocaleDateString
+      // ("de-DE", {
+      //   hour: "numeric",
+      //   minute: "numeric",
+      // });
+      ("en-us", {
+        hour: "numeric",
+        minute: "numeric",
+      });
     },
   },
 };
@@ -586,8 +295,8 @@ export default {
   border-radius: 4px;
 }
 
-.height-300 {
-  height: 300px;
+.height-500 {
+  height: 500px;
 }
 
 .code-section {
@@ -597,11 +306,11 @@ export default {
 
 .id-copy-button {
   padding: 0.1rem 0.35rem;
-  font-size: 0.7rem;
+  font-size: 0.6rem;
 }
 
 .icon-button {
-  padding: 0.3rem 0.3rem;
-  font-size: 0.9rem;
+  padding: 0.1rem 0.35rem;
+  font-size: 0.7rem;
 }
 </style>
