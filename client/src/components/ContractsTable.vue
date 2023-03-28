@@ -4,6 +4,31 @@
       <b-row class="mb-3" align-v="center">
         <!-- Filter -->
         <b-col>
+          <b-button 
+            id="filter-button"
+            :class="filterVisible ? null : 'collapsed'"
+            :aria-expanded="filterVisible ? 'true' : 'false'"
+            aria-controls="collapse-filter"
+            @click="filterVisible = !filterVisible"
+            variant="link"
+            class="text-dark font-weight-bold text-decoration-none"
+          >
+            <b-icon-caret-down-fill v-if="!filterVisible"></b-icon-caret-down-fill>
+            <b-icon-caret-up-fill v-else></b-icon-caret-up-fill>
+            Filter
+          </b-button>
+          <b-collapse id="collapse-filter" v-model="filterVisible" class="mt-2">
+            <b-card
+              bg-variant="light"
+              class="mb-2"
+            >
+              <FilterForm
+                @search="updateSearchParams($event)"
+              />
+            </b-card>
+          </b-collapse>
+        </b-col>
+        <!-- <b-col>
           <b-form-group label-for="filter-input">
             <b-input-group size="sm">
               <b-form-input
@@ -20,7 +45,7 @@
               </b-input-group-append>
             </b-input-group>
           </b-form-group>
-        </b-col>
+        </b-col> -->
       </b-row>
 
       <!-- Main table element -->
@@ -37,7 +62,6 @@
         hover
         show-empty
         head-variant="light"
-        @filtered="onFiltered"
       >
         <!-- Row: Title (format bold) -->
         <template #cell(name)="data">
@@ -133,8 +157,9 @@
           <b-form-group label-for="go-to-input">
             <b-input-group size="sm">
               <b-form-input
-              id="go-to-input"
+                id="go-to-input"
                 v-model="goTo"
+                min="0"
                 type="number"
               ></b-form-input>
               
@@ -152,8 +177,13 @@
 
 <script>
 import ContractsService from "@/services/ContractsService";
+import FilterForm from "@/components/FilterForm";
+
 export default {
   name: "contracts",
+  components: {
+    FilterForm,
+  },
   data() {
     return {
       contracts: [],
@@ -205,6 +235,9 @@ export default {
         },
       ],
 
+      filterVisible: false,
+      searchParams: {},
+
       // Table Settings
       isBusy: false,
       totalRows: 1,
@@ -231,9 +264,17 @@ export default {
      */
     async getContracts() {
       this.isBusy = true;
-      const params = this.getRequestParams(this.currentPage, this.perPage);
+      const paginationParams = this.getPaginationParams(
+        this.currentPage,
+        this.perPage
+      );
+      const params = {
+        ...paginationParams,
+        ...this.searchParams,
+      };
       const response = await ContractsService.getAll(params);
-      this.totalRows = parseInt(response.headers["x-total-db-size"]);
+      // this.totalRows = parseInt(response.headers["x-total-db-size"]);
+      this.totalRows = parseInt(response.data.totalCount);
       this.contracts = response.data.data;
       this.contracts.forEach((element) => {
         if (element.versions.length > 0) {
@@ -247,11 +288,21 @@ export default {
     },
 
     /**
-     * getRequestParams
+     * updateSearchParams
+     * 
+     * update search params
+     */
+    updateSearchParams(params) {
+      this.searchParams = params;
+      this.getContracts();
+    },
+
+    /**
+     * getPaginationParams
      *
      * calculate params for getContracts
      */
-    getRequestParams(page, pageSize) {
+     getPaginationParams(page, pageSize) {
       let params = {};
       if (page) {
         params["skip"] = (page - 1) * pageSize;
@@ -260,63 +311,6 @@ export default {
         params["limit"] = pageSize;
       }
       return params;
-    },
-
-    /**
-     * destroyContract
-     *
-     * API call to delete contract after confirmation
-     */
-    async destroyContract(contract) {
-      if (confirm("Do you really want to delete " + contract.title + "?")) {
-        const response = await ContractsService.delete(contract.id);
-        if (response.status == "204") {
-          this.$parent.makeToast(
-            "204 :: Success",
-            "The contract was deleted.",
-            "success"
-          );
-          this.getContracts();
-        } else {
-          this.$parent.makeToast(
-            "422 :: Error",
-            "Something went wrong.",
-            "danger"
-          );
-          this.getContracts();
-        }
-      } else {
-        this.$parent.makeToast("Error", "Contract was not deleted.", "danger");
-      }
-    },
-
-    async deleteContract() {
-      const response = await ContractsService.delete(this.contract.id);
-      if (response.status == "204") {
-        this.$parent.makeToast(
-          "204 :: Success",
-          "The contract was deleted.",
-          "success"
-        );
-        this.$router.push("/");
-      } else {
-        this.$parent.makeToast(
-          "422 :: Error",
-          "Something went wrong.",
-          "danger"
-        );
-        this.getContract(this.contract.id);
-      }
-    },
-
-    /**
-     * onFiltered
-     *
-     * Trigger pagination to update the number of buttons/pages due to filtering
-     */
-    onFiltered(filteredItems) {
-      //this.totalRows = filteredItems.length;
-      //this.currentPage = 1;
     },
 
     /**
@@ -364,6 +358,16 @@ export default {
 
 #filter-input {
   min-width: 100px;
+}
+
+#filter-button {
+  font-size: large;
+  padding-top: 0px;
+  padding-bottom: 0px;
+}
+
+#filter-button:focus {
+  box-shadow: none;
 }
 
 .btn-sm {
