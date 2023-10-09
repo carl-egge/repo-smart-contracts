@@ -40,7 +40,7 @@ app.add_middleware(
 )
 
 # create base router
-app.include_router(contracts.router, prefix='/api/contracts', tags=["Contracts"],)
+app.include_router(contracts.router, prefix='/api', tags=["Contracts"],)
 
 
 @app.on_event("startup")

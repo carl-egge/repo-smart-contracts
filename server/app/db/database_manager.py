@@ -22,17 +22,17 @@ class DatabaseManager(object):
         pass
 
     @abstractmethod
-    async def get_contracts(self, name, language, license, sha, repo, owner, amountOfVersions, pragma, size, searchAllVersions, limit, skip) -> List[ContractDB]:
+    async def get_contracts(self, name, language, license, sha, repo, owner, amountOfVersions, pragma, size, searchAllVersions, limit, skip, collection) -> List[ContractDB]:
         pass
 
     @abstractmethod
-    async def count_database(self) -> int:
+    async def count_database(self, collection) -> int:
         pass
 
     @abstractmethod
-    async def count_contracts(self, name, language, license, sha, repo, owner, amountOfVersions, pragma, size, searchAllVersions) -> int:
+    async def count_contracts(self, name, language, license, sha, repo, owner, amountOfVersions, pragma, size, searchAllVersions, collection) -> int:
         pass
 
     @abstractmethod
-    async def get_contract(self, contract_id: OID, version_id: Union[int, None]):
+    async def get_contract(self, contract_id: OID, version_id: Union[int, None], collection):
         pass
