@@ -10,11 +10,7 @@
       <b-row>
         <b-col class="text-secondary">
           ({{ this.contract.id }})
-          <b-button
-            variant="outline-secondary"
-            class="id-copy-button"
-            @click="copyToClipBoard(contract.id)"
-          >
+          <b-button variant="outline-secondary" class="id-copy-button" @click="copyToClipBoard(contract.id)">
             <b-icon icon="clipboard"></b-icon>
           </b-button>
         </b-col>
@@ -45,7 +41,7 @@
     <h6 class="font-italic">Repository:</h6>
     <b-container class="code-section" fluid>
       <b-row>
-        <b-col> 
+        <b-col>
           <a :href="'https://github.com/' + this.contract.repo.full_name" target="_blank">
             <strong>{{ this.contract.repo.full_name }}</strong>
           </a>
@@ -73,30 +69,17 @@
     <b-container class="code-section" v-if="this.contract.versions.length > 0" fluid>
       <b-row v-if="show_version_dropdown">
         <b-col cols="auto">
-          <b-dropdown
-            id="choose-Version"
-            variant="outline-secondary"
-            class="m-2"
-            size="sm"
-          >
+          <b-dropdown id="choose-Version" variant="outline-secondary" class="m-2" size="sm">
             <template #button-content> Version: {{ current_version + 1 }} </template>
-            <b-dropdown-item
-              v-for="vers in contract.versions"
-              :key="vers.version_id"
-              @click="changeVersion(vers.version_id)"
-            >
+            <b-dropdown-item v-for="vers in contract.versions" :key="vers.version_id"
+              @click="changeVersion(vers.version_id)">
               Version: {{ vers.version_id }}
             </b-dropdown-item>
           </b-dropdown>
         </b-col>
       </b-row>
       <b-row v-else>
-        <b-button
-          variant="outline-secondary"
-          size="sm"
-          class="m-2"
-          disabled
-        >
+        <b-button variant="outline-secondary" size="sm" class="m-2" disabled>
           Version: 1
         </b-button>
         <span class="font-weight-lighter m-2" style="font-size: 0.9em;">(only one version available)</span>
@@ -128,24 +111,16 @@
       <b-row>
         <b-col class="font-weight-bold" md="2" lg="1"> Sourcecode: </b-col>
         <b-col>
-          <b-button
-            variant="outline-secondary"
-            class="icon-button ml-2"
-            @click="copyToClipBoard(contract.versions[current_version].content)"
-          >
+          <b-button variant="outline-secondary" class="icon-button ml-2"
+            @click="copyToClipBoard(contract.versions[current_version].content)">
             <b-icon icon="clipboard"></b-icon>
           </b-button>
         </b-col>
       </b-row>
       <b-row>
         <b-col>
-          <prism-editor
-            class="my-editor height-500"
-            v-model="this.contract.versions[current_version].content"
-            :highlight="highlighter"
-            line-numbers
-            placeholder="no source code here ..."
-          >
+          <prism-editor class="my-editor height-500" v-model="this.contract.versions[current_version].content"
+            :highlight="highlighter" line-numbers placeholder="no source code here ...">
           </prism-editor>
         </b-col>
       </b-row>
@@ -156,6 +131,7 @@
 
 <script>
 import ContractsService from "@/services/ContractsService";
+import FlatContractsService from "@/services/FlatContractsService";
 
 // import Prism Editor
 import { PrismEditor } from "vue-prism-editor";
@@ -198,7 +174,7 @@ export default {
       if (this.contract == {}) {
         return "loading ...";
       }
-      if(this.contract.repo.full_name.indexOf("/") > -1) {
+      if (this.contract.repo.full_name.indexOf("/") > -1) {
         return this.contract.repo.full_name.split("/")[0] + " (" + this.contract.repo.owner_id + ")";
       } else {
         return this.contract.repo.owner_id;
@@ -210,7 +186,13 @@ export default {
      * GET contract from server
      */
     async getContract(iden) {
-      const response = await ContractsService.get(iden);
+      const routeName = this.$route.name;
+      let response = {}
+      if (routeName == 'ContractDetails') {
+        response = await ContractsService.get(iden);
+      } else {
+        response = await FlatContractsService.get(iden);
+      }
       if (response.data.status == 404) {
         this.$parent.makeToast(
           "Error",
@@ -265,14 +247,14 @@ export default {
       if (!value) return "";
       var tmp = new Date(value);
       return tmp.toLocaleDateString
-      // ("de-DE", {
-      //   hour: "numeric",
-      //   minute: "numeric",
-      // });
-      ("en-us", {
-        hour: "numeric",
-        minute: "numeric",
-      });
+        // ("de-DE", {
+        //   hour: "numeric",
+        //   minute: "numeric",
+        // });
+        ("en-us", {
+          hour: "numeric",
+          minute: "numeric",
+        });
     },
   },
 };
@@ -282,7 +264,8 @@ export default {
 <style scoped>
 .my-editor {
   /* we dont use `language-` classes anymore so thats why we need to add background and text color manually */
-  background: #eee; /*#2d2d2d;*/
+  background: #eee;
+  /*#2d2d2d;*/
   color: #ccc;
 
   /* you must provide font-family font-size line-height. Example: */

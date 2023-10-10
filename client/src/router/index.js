@@ -13,7 +13,12 @@ export default new Router({
   routes: [
     {
       path: '/',
-      alias: '/contracts',
+      alias: '/about',
+      name: 'About',
+      component: About
+    },
+    {
+      path: '/contracts',
       name: 'Contracts',
       component: ContractsTable
     },
@@ -22,16 +27,21 @@ export default new Router({
       name: 'ContractDetails',
       component: Contract
     },
+    {
+      path: '/flatcontracts',
+      name: 'FlatContracts',
+      component: ContractsTable
+    },
+    {
+      path: '/flatcontracts/:id',
+      name: 'FlatContractDetails',
+      component: Contract
+    },
     // {
     //   path: '/archive',
     //   name: 'Archive',
     //   component: Archive
     // },
-    {
-      path: '/about',
-      name: 'About',
-      component: About
-    },
     {
       path: '*',
       redirect: '/'
