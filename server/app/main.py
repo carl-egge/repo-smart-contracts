@@ -13,7 +13,12 @@ from app.db import db
 from app.rest import contracts
 
 # create the app
-app = FastAPI(title="Repository Smart Contracts")
+app = FastAPI(title="Repository Smart Contracts",
+              description="This API serves a database of Blockchain Smart Contracts together with metadata.",
+              docs_url='/api/docs',
+              redoc_url='/api/redoc',
+              openapi_url='/api/openapi.json')
+
 
 
 # add rate limiting
