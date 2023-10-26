@@ -59,14 +59,15 @@ class MongoManager(DatabaseManager):
             size: Union[str, None],
             searchAllVersions: bool,
             limit: int,
-            skip: int) -> List[ContractDB]:
+            skip: int,
+            collection: str = 'contracts') -> List[ContractDB]:
         contracts_q = []
         # Create and run query
         query = self.construct_query_obj(name, language, license, sha, repo, owner, amountOfVersions, pragma, size, searchAllVersions)
         if query == 0:
             return []
         else:
-            contracts_q = self.db.contracts.find(query)
+            contracts_q = self.db[collection].find(query)
         # Pagination -----------> TODO: Add next link to response if result is paginated
         contracts_q.skip(skip).limit(limit)
         # Fix format and return contracts
@@ -76,8 +77,8 @@ class MongoManager(DatabaseManager):
         return contracts_list
 
     # READ : a single contract or one version of its code is returned
-    async def get_contract(self, contract_id: OID, version_id: Union[int, None]):
-        contract_q = await self.db.contracts.find_one({'_id': ObjectId(contract_id)})
+    async def get_contract(self, contract_id: OID, version_id: Union[int, None], collection: str = 'contracts'):
+        contract_q = await self.db[collection].find_one({'_id': ObjectId(contract_id)})
         if contract_q:
             if version_id == None:
                 return ContractDB(**contract_q, id=contract_q['_id'])
@@ -87,9 +88,9 @@ class MongoManager(DatabaseManager):
                 return contract_q["versions"][version_id]["content"]
             
     # Count all documents in database (estimation)
-    async def count_database(self) -> int:
+    async def count_database(self, collection: str = 'contacts') -> int:
         # using estimated_document_count instead of count_documents because its faster
-        return await self.db.contracts.estimated_document_count()
+        return await self.db[collection].estimated_document_count()
     
     # Count the documents in the result set of the given query parameters if any are not None
     async def count_contracts(
@@ -103,11 +104,12 @@ class MongoManager(DatabaseManager):
             amountOfVersions: Union[int, None],
             pragma: Union[str, None],
             size: Union[str, None],
-            searchAllVersions: bool) -> int:
+            searchAllVersions: bool,
+            collection: str = 'contracts') -> int:
         query = self.construct_query_obj(name, language, license, sha, repo, owner, amountOfVersions, pragma, size, searchAllVersions)
         if query:
-            return await self.db.contracts.count_documents(query)
-        return await self.db.contracts.estimated_document_count()
+            return await self.db[collection].count_documents(query)
+        return await self.db[collection].estimated_document_count()
                
     #
     # Helperfunctions -----------------------------------------------------------------------
