@@ -1,12 +1,20 @@
 # Repository for Smart Contracts V2
 
-> This project was built as part of a bachelor thesis about smart contract gas optimization. It is a full stack application that can be used to store and interact with smart contract source code.
+> This project was built as part of a bachelor thesis about smart contract gas optimization. It is a full stack application that can be used to store and query information about smart contract source code.
 
 ## Version 2
 
-Version 2 will include a complete redesign of frontend and backend. The API will be a GET-only API with enhanced filter options and the client will be updated accordingly.
+Version 2 includes a complete redesign of frontend and backend. The API is now GET-only API with enhanced filter options and the client is updated accordingly. The application can be reached under https://scr.ide.tuhh.de/. This second version is fully functional and includes a larger set of query options that can be used to filter the data from the MongoDB collection. It also includes an enhanced client view that is build with vuejs and that consumes the API. The client view can statically be served.
 
-## Installation
+## The Application
+
+The **frontend** consists of a VueJS app that uses axios to call the API and BootstrapVue for styling. The code for the frontend can be found in `~/repo-smart-contracts/client` . The production server is served from the compiled and minified code in the `/dist` folder.
+
+The **backend** consists of a python fastapi app that uses poetry as a dependency manager. The code for the backend can be found in `~/repo-smart-contracts/server`.
+
+The **database** of this application is a MongoDB document store that is consumed by the fastapi service.
+
+## Installation with Docker
 
 - Establish environment: `cp server/example.env server/.env`
 - Build project: `docker-compose build`
@@ -42,19 +50,10 @@ Find the openapi schema: http://localhost:8081/openapi.json
 
 ---
 
-**Hot Reload for Vue without Docker:**
-
-1. `docker-compose up -d mongo`
-2. `docker-compose up -d api`
-3. `cd client`
-4. `npm run dev`
-
----
-
-**Enter Mongo Shell:**
+**Interact with Mongo Shell:**
 
 1. `docker-compose exec mongo bash`
 2. `mongosh`
 3. `use main_db`
-4. `show collections`
-5. `db.<collection_name>.<action>()`
+4. `show contracts`
+5. `db.contracts.<action>()`
